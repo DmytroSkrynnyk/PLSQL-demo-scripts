@@ -1,0 +1,504 @@
+CREATE OR REPLACE PACKAGE xfile
+/*
+|| Xtra FILE access from PL/SQL
+||
+|| More complete file management capabilities for PL/SQL
+||
+|| Items to add:
+||    Generate a unique file number following a certain
+||    pattern in a directory.
+||
+|| Author: Steven Feuerstein
+||   Date: 2/26/99
+*/
+IS 
+   c_dirdelim CONSTANT CHAR(1) := '|';
+
+   /* Status of file */
+   FUNCTION canRead (file IN VARCHAR2) RETURN BOOLEAN;
+   FUNCTION canWrite (file IN VARCHAR2) RETURN BOOLEAN;
+   FUNCTION exists (file IN VARCHAR2) RETURN BOOLEAN;
+   FUNCTION isDirectory (file IN VARCHAR2) RETURN BOOLEAN;
+   FUNCTION isFile (file IN VARCHAR2) RETURN BOOLEAN;
+   FUNCTION separator (file IN VARCHAR2) RETURN VARCHAR2;
+   
+   /* Information about file */
+   FUNCTION length (file IN VARCHAR2) RETURN NUMBER;
+   FUNCTION parentDir (file IN VARCHAR2) RETURN VARCHAR2;
+   FUNCTION pathName (file IN VARCHAR2) RETURN VARCHAR2;
+   FUNCTION lastModified (file IN VARCHAR2) RETURN NUMBER;
+      /* Not a date; only useful for comparisions. */
+
+   PROCEDURE getDirContents (dir IN VARCHAR2, files IN OUT VARCHAR2);
+   PROCEDURE getDirContents (dir IN VARCHAR2, files IN OUT PLVtab.vc2000_table);
+   PROCEDURE getDirContents (
+      dir IN VARCHAR2, 
+      filter IN VARCHAR2, 
+      files IN OUT PLVtab.vc2000_table,
+      match_case IN BOOLEAN := TRUE);
+   PROCEDURE showdirContents (
+      dir IN VARCHAR2, 
+      filter IN VARCHAR2, 
+      match_case IN BOOLEAN := TRUE);
+   
+   FUNCTION delete (file IN VARCHAR2) RETURN BOOLEAN;
+   PROCEDURE delete (
+      dir IN VARCHAR2, 
+      file IN VARCHAR2 := NULL,
+      match_case IN BOOLEAN := TRUE,
+      show_deletes IN BOOLEAN := FALSE);
+      
+   FUNCTION mkdir (dir IN VARCHAR2) RETURN BOOLEAN;
+   FUNCTION rename (
+      oldfile IN VARCHAR2, newfile IN VARCHAR2, showme IN BOOLEAN := FALSE)
+      RETURN BOOLEAN;
+      
+   PROCEDURE chgext (
+      dir IN VARCHAR2,
+      oldext IN VARCHAR2,
+      newext IN VARCHAR2,
+      filter IN VARCHAR2 := '%',
+      showonly IN BOOLEAN := FALSE
+      );
+      
+   /* UTL_FILE compatibility operations */
+   
+   FUNCTION fopen (
+      location IN VARCHAR2,
+      filename IN VARCHAR2,
+      open_mode IN VARCHAR2
+      )
+      RETURN UTL_FILE.file_type;
+
+   FUNCTION fopen (
+      location IN VARCHAR2,
+      filename IN VARCHAR2,
+      open_mode IN VARCHAR2,
+      max_linesize IN BINARY_INTEGER
+      )
+      RETURN UTL_FILE.FILE_TYPE;
+
+   PROCEDURE fclose (file IN OUT UTL_FILE.FILE_TYPE);
+
+   PROCEDURE fclose_all;
+
+   PROCEDURE fflush (file IN UTL_FILE.FILE_TYPE);
+
+   PROCEDURE get_line (
+      file IN UTL_FILE.FILE_TYPE,
+      buffer OUT VARCHAR2
+      );
+
+   PROCEDURE get_line (
+      file IN UTL_FILE.FILE_TYPE,
+      buffer OUT VARCHAR2,
+      eof OUT BOOLEAN
+      );
+
+   PROCEDURE put (file IN UTL_FILE.FILE_TYPE, buffer IN VARCHAR2);
+
+   PROCEDURE new_line (
+      file IN UTL_FILE.FILE_TYPE,
+      lines IN NATURAL := 1
+      );
+
+   PROCEDURE put_line (
+      file IN UTL_FILE.FILE_TYPE,
+      buffer IN VARCHAR2
+      );
+
+   PROCEDURE putf (
+      file IN UTL_FILE.FILE_TYPE,
+      format IN VARCHAR2,
+      arg1 IN VARCHAR2 DEFAULT NULL,
+      arg2 IN VARCHAR2 DEFAULT NULL,
+      arg3 IN VARCHAR2 DEFAULT NULL,
+      arg4 IN VARCHAR2 DEFAULT NULL,
+      arg5 IN VARCHAR2 DEFAULT NULL
+      );
+      
+   FUNCTION loblength (dir IN VARCHAR2, file IN VARCHAR2) RETURN NUMBER;
+   
+END;
+/
+CREATE OR REPLACE PACKAGE BODY xfile
+IS
+   /* Used to handle conversion from number to boolean. */
+   c_true CONSTANT INTEGER := 1;
+   c_false CONSTANT INTEGER := 0;
+
+   FUNCTION separator (file IN VARCHAR2) RETURN VARCHAR2
+   AS LANGUAGE JAVA
+      NAME 'JFile.separator (java.lang.String) return java.lang.String';
+
+   FUNCTION IcanRead (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.canRead (java.lang.String) return int';
+      
+   FUNCTION IcanWrite (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.canWrite (java.lang.String) return int';
+
+   FUNCTION Iexists (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.exists (java.lang.String) return int';
+      
+   FUNCTION IisDirectory (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.isDirectory (java.lang.String) return int';
+
+   FUNCTION IisFile (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.isFile (java.lang.String) return int';
+   ---------------------
+   FUNCTION canRead (file IN VARCHAR2) RETURN BOOLEAN
+   AS
+   BEGIN
+      RETURN IcanRead (file) = c_true;
+   END;
+   
+   FUNCTION canWrite (file IN VARCHAR2) RETURN BOOLEAN
+   AS
+   BEGIN
+      RETURN IcanWrite (file) = c_true;
+   END;
+   
+   FUNCTION exists (file IN VARCHAR2) RETURN BOOLEAN
+   AS
+   BEGIN
+      RETURN Iexists (file) = c_true;
+   END;
+   
+   FUNCTION isDirectory (file IN VARCHAR2) RETURN BOOLEAN
+   AS
+   BEGIN
+      RETURN IisDirectory (file) = c_true;
+   END;
+   
+   FUNCTION isFile (file IN VARCHAR2) RETURN BOOLEAN
+   AS
+   BEGIN
+      RETURN IisFile (file) = c_true;
+   END;
+   ---------------------
+   FUNCTION length (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.length (java.lang.String) return long';
+   
+   FUNCTION parentDir (file IN VARCHAR2) RETURN VARCHAR2
+   AS LANGUAGE JAVA
+      NAME 'JFile.parentDir (java.lang.String) return java.lang.String';
+
+   FUNCTION pathName (file IN VARCHAR2) RETURN VARCHAR2
+   AS LANGUAGE JAVA
+      NAME 'JFile.pathName (java.lang.String) return java.lang.String';
+
+   FUNCTION lastModified (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.lastModified (java.lang.String) return long';
+   
+   FUNCTION dirContents (dir IN VARCHAR2) RETURN VARCHAR2
+   AS LANGUAGE JAVA
+      NAME 'JFile.dirContents (java.lang.String) return java.lang.String';
+
+   PROCEDURE getDirContents (dir IN VARCHAR2, files IN OUT VARCHAR2)
+   IS
+   BEGIN
+      files := dirContents (dir);
+   END;
+   
+   PROCEDURE getDirContents (dir IN VARCHAR2, files IN OUT PLVtab.vc2000_table)
+   IS
+      filenum PLS_INTEGER;
+   BEGIN
+      PLVprs.string (dirContents (dir), files, filenum, 
+         delimiters_in => c_dirdelim, type_in => PLVprs.c_word);
+   END;
+
+   PROCEDURE getDirContents (
+      dir IN VARCHAR2, 
+      filter IN VARCHAR2, 
+      files IN OUT PLVtab.vc2000_table,
+      match_case IN BOOLEAN := TRUE)
+   IS
+      filenum PLS_INTEGER;
+      
+      FUNCTION matched (file1 IN VARCHAR2, file2 IN VARCHAR2)
+         RETURN BOOLEAN
+      IS
+         retval BOOLEAN := FALSE;
+      BEGIN
+         IF match_case  
+         THEN
+            retval := file1 LIKE file2;
+         ELSE
+            retval := LOWER (file1) LIKE LOWER (file2);
+         END IF;
+         RETURN retval;
+      END;
+   BEGIN
+      PLVprs.string (dirContents (dir), files, filenum, 
+         delimiters_in => c_dirdelim, type_in => PLVprs.c_word);
+         
+      filenum := files.FIRST;   
+      LOOP
+         EXIT WHEN filenum IS NULL;
+         IF NOT matched (files(filenum), filter)
+         THEN
+            files.DELETE (filenum);
+         END IF;
+         filenum := files.NEXT (filenum);
+      END LOOP;
+   END;
+   
+   PROCEDURE showdirContents (
+      dir IN VARCHAR2, 
+      filter IN VARCHAR2, 
+      match_case IN BOOLEAN := TRUE)
+   IS
+      filestab PLVtab.vc2000_table;
+      filenum PLS_INTEGER;
+   BEGIN
+      getDirContents (dir, filter, filestab, match_case);
+      
+      filenum := filestab.FIRST;
+      LOOP
+         EXIT WHEN filenum IS NULL;
+         p.l (filestab(filenum));
+         filenum := filestab.NEXT (filenum);
+      END LOOP;
+   END;
+   
+   ---------------------
+   FUNCTION Idelete (file IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.delete (java.lang.String) return int';
+
+   FUNCTION delete (file IN VARCHAR2) RETURN BOOLEAN
+   AS
+   BEGIN
+      RETURN Idelete (file) = c_true;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         p.l ('Error deleting: ' || SQLERRM);
+         RETURN FALSE;
+   END;
+
+   PROCEDURE delete (
+      dir IN VARCHAR2, 
+      file IN VARCHAR2 := NULL,
+      match_case IN BOOLEAN := TRUE,
+      show_deletes IN BOOLEAN := FALSE)
+   IS
+      filestab PLVtab.vc2000_table;
+      filenum PLS_INTEGER;
+      deleted BOOLEAN;
+      v_file VARCHAR2(2000);
+   BEGIN
+      getDirContents (dir, file, filestab);
+      
+      filenum := filestab.FIRST;
+      LOOP
+         EXIT WHEN filenum IS NULL;
+         v_file := dir || separator (filestab(filenum)) || filestab(filenum);
+         deleted := xfile.delete (v_file);
+         IF show_deletes AND deleted
+         THEN   
+            p.l ('Deleted ' || v_file);
+         ELSIF show_deletes AND NOT deleted
+         THEN
+            p.l ('Unable to delete ' || v_file);
+         END IF;
+         filenum := filestab.NEXT (filenum);
+      END LOOP;
+   END;
+      
+   FUNCTION Imkdir (dir IN VARCHAR2) RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.mkdir (java.lang.String) return int';
+
+   FUNCTION mkdir (dir IN VARCHAR2) RETURN BOOLEAN
+   AS
+   BEGIN
+      RETURN Imkdir (dir) = c_true;
+   END;
+   
+   FUNCTION Irename (oldfile IN VARCHAR2, newfile IN VARCHAR2)
+      RETURN NUMBER
+   AS LANGUAGE JAVA
+      NAME 'JFile.rename (java.lang.String, java.lang.String) return int';
+
+   FUNCTION rename (
+      oldfile IN VARCHAR2, newfile IN VARCHAR2, showme IN BOOLEAN := FALSE)
+      RETURN BOOLEAN
+   AS
+      v_bool BOOLEAN := Irename (oldfile, newfile) = c_true;
+   BEGIN
+      IF v_bool AND showme THEN
+         DBMS_OUTPUT.PUT_LINE ('Renamed ' || oldfile || ' to ' || newfile);
+      END IF;
+      
+      RETURN v_bool;
+   END;     
+
+   PROCEDURE chgext (
+      dir IN VARCHAR2,
+      oldext IN VARCHAR2,
+      newext IN VARCHAR2,
+      filter IN VARCHAR2 := '%',
+      showonly IN BOOLEAN := FALSE
+      )
+   IS
+      files PLVtab.vc2000_table;
+      filenum PLS_INTEGER;
+      newfile VARCHAR2(200);
+      renamed BOOLEAN;
+   BEGIN
+      xfile.getDirContents (dir, filter || '.' || oldext, files, match_case => FALSE);
+      filenum := files.FIRST;
+      LOOP
+         EXIT WHEN filenum IS NULL;
+
+         newfile := 
+            dir || 
+            '\' || 
+            SUBSTR (files(filenum), 1, INSTR (files(filenum), '.')) || 
+            newext;
+
+         IF showonly 
+         THEN
+            DBMS_OUTPUT.PUT_LINE ('Change to ' || newfile);
+         ELSE 
+            renamed := xfile.rename (dir || '\' || files(filenum), newfile);
+         END IF;
+
+         filenum := files.NEXT (filenum);
+      END LOOP;
+   END;
+
+   /* UTL_FILE compatibility operations. */
+   FUNCTION fopen (
+      location IN VARCHAR2,
+      filename IN VARCHAR2,
+      open_mode IN VARCHAR2
+      )
+      RETURN UTL_FILE.file_type
+   IS
+   BEGIN
+      RETURN UTL_FILE.fopen (location, filename, open_mode);
+   END;
+
+   FUNCTION fopen (
+      location IN VARCHAR2,
+      filename IN VARCHAR2,
+      open_mode IN VARCHAR2,
+      max_linesize IN BINARY_INTEGER
+      )
+      RETURN UTL_FILE.FILE_TYPE
+   IS
+   BEGIN
+      RETURN UTL_FILE.fopen (
+                location,
+                filename,
+                open_mode,
+                max_linesize
+             );
+   END;
+
+   PROCEDURE fclose (file IN OUT UTL_FILE.FILE_TYPE)
+   IS
+   BEGIN
+      UTL_FILE.fclose (file);
+   END;
+
+   PROCEDURE fclose_all
+   IS
+   BEGIN
+      UTL_FILE.fclose_all;
+   END;
+
+   PROCEDURE fflush (file IN UTL_FILE.FILE_TYPE)
+   IS
+   BEGIN
+      UTL_FILE.fflush (file);
+   END;
+
+   PROCEDURE get_line (
+      file IN UTL_FILE.FILE_TYPE,
+      buffer OUT VARCHAR2
+      )
+   IS
+   BEGIN
+      UTL_FILE.get_line (file, buffer);
+   END;
+
+   PROCEDURE get_line 
+      (file IN UTL_FILE.FILE_TYPE, 
+       buffer OUT VARCHAR2, 
+       eof OUT BOOLEAN)
+   IS
+   BEGIN
+      UTL_FILE.GET_LINE (file, buffer);
+      eof := FALSE;
+   EXCEPTION
+      WHEN NO_DATA_FOUND
+      THEN
+         buffer := NULL;
+         eof  := TRUE;
+   END;
+   
+   PROCEDURE put (file IN UTL_FILE.FILE_TYPE, buffer IN VARCHAR2)
+   IS
+   BEGIN
+      UTL_FILE.put (file, buffer);
+   END;
+
+   PROCEDURE new_line (
+      file IN UTL_FILE.FILE_TYPE,
+      lines IN NATURAL := 1
+      )
+   IS
+   BEGIN
+      UTL_FILE.new_line (file, lines);
+   END;
+
+   PROCEDURE put_line (
+      file IN UTL_FILE.FILE_TYPE,
+      buffer IN VARCHAR2
+      )
+   IS
+   BEGIN
+      UTL_FILE.put_line (file, buffer);
+   END;
+
+   PROCEDURE putf (
+      file IN UTL_FILE.FILE_TYPE,
+      format IN VARCHAR2,
+      arg1 IN VARCHAR2 DEFAULT NULL,
+      arg2 IN VARCHAR2 DEFAULT NULL,
+      arg3 IN VARCHAR2 DEFAULT NULL,
+      arg4 IN VARCHAR2 DEFAULT NULL,
+      arg5 IN VARCHAR2 DEFAULT NULL
+      )
+   IS
+   BEGIN
+      UTL_FILE.putf (
+         file,
+         format,
+         arg1,
+         arg2,
+         arg3,
+         arg4,
+         arg5
+      );
+   END;
+   
+   FUNCTION loblength (dir IN VARCHAR2, file IN VARCHAR2) RETURN NUMBER
+   IS
+      v_loc BFILE := BFILENAME (dir, file);
+   BEGIN
+      RETURN DBMS_LOB.GETLENGTH (v_loc);
+   END;
+END;
+/

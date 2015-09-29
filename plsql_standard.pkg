@@ -1,0 +1,3418 @@
+CREATE OR REPLACE PACKAGE plsql_standard
+/*
+Overview: The plsql_standard package is an API to built-in functions
+and procedures in the STANDARD package.
+
+We will use this as the launchpad from which to build a regression
+test script for the PL/SQL language using Quest Code Tester.
+
+Author: Steven Feuerstein, steven.feuerstein@quest.com
+
+*/
+IS
+   FUNCTION GREATEST (pattern NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION GREATEST (pattern VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION GREATEST (pattern DATE)
+      RETURN DATE;
+
+   FUNCTION LEAST (pattern NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION LEAST (pattern VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION LEAST (pattern DATE)
+      RETURN DATE;
+
+   FUNCTION SQLCODE
+      RETURN PLS_INTEGER;
+
+   FUNCTION SQLERRM
+      RETURN VARCHAR2;
+
+   FUNCTION SQLERRM (code PLS_INTEGER)
+      RETURN VARCHAR2;
+
+   FUNCTION xor (LEFT BOOLEAN, RIGHT BOOLEAN)
+      RETURN BOOLEAN;
+
+   FUNCTION CONCAT (LEFT VARCHAR2, RIGHT VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION LENGTH (ch VARCHAR2)
+      RETURN NATURAL;
+
+   -- In SUBSTR, LEN defaults to remainder of string
+   -- In substr and instr, a negative value of parameter POS means to
+   -- count from the right end of the string.
+   FUNCTION SUBSTR (
+      str1   VARCHAR2
+    , pos    PLS_INTEGER
+    , len    PLS_INTEGER := 2147483647
+   )
+      RETURN VARCHAR2;
+
+   -- Find nth occurrence of str1 in str2 starting at pos
+   FUNCTION INSTR (
+      str1   VARCHAR2
+    , str2   VARCHAR2
+    , pos    PLS_INTEGER := 1
+    , nth    POSITIVE := 1
+   )
+      RETURN PLS_INTEGER;
+
+   FUNCTION UPPER (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION LOWER (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION ASCII (ch VARCHAR2)
+      RETURN PLS_INTEGER;
+
+   FUNCTION ASCIISTR (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION UNISTR (ch VARCHAR2)
+      RETURN NVARCHAR2;
+
+   FUNCTION CHR (n PLS_INTEGER)
+      RETURN VARCHAR2;
+
+   FUNCTION INITCAP (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION SOUNDEX (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION LPAD (str1 VARCHAR2, len PLS_INTEGER, pad VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION LPAD (str1 VARCHAR2, len PLS_INTEGER)
+      RETURN VARCHAR2;
+
+   FUNCTION RPAD (str1 VARCHAR2, len PLS_INTEGER, pad VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION RPAD (str1 VARCHAR2, len PLS_INTEGER)
+      RETURN VARCHAR2;
+
+   FUNCTION TRANSLATE (str1 VARCHAR2, src VARCHAR2, dest VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION REPLACE (srcstr VARCHAR2, oldsub VARCHAR2, newsub VARCHAR2
+            := NULL)
+      RETURN VARCHAR2;
+
+   FUNCTION LTRIM (str1 VARCHAR2 := ' ', tset VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION LTRIM (str1 VARCHAR2 := ' ')
+      RETURN VARCHAR2;
+
+   FUNCTION RTRIM (str1 VARCHAR2 := ' ', tset VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION RTRIM (str1 VARCHAR2 := ' ')
+      RETURN VARCHAR2;
+
+   FUNCTION FLOOR (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION CEIL (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION SQRT (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION SIGN (n NUMBER)
+      RETURN SIGNTYPE;
+
+   FUNCTION COS (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION SIN (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION TAN (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION COSH (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION SINH (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION TANH (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION EXP (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION LN (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION BITAND (LEFT PLS_INTEGER, RIGHT PLS_INTEGER)
+      RETURN PLS_INTEGER;
+
+   FUNCTION BITAND (LEFT INTEGER, RIGHT INTEGER)
+      RETURN INTEGER;
+
+   FUNCTION LOG (LEFT NUMBER, RIGHT NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION TRUNC (n NUMBER, places PLS_INTEGER := 0)
+      RETURN NUMBER;
+
+   FUNCTION ROUND (LEFT NUMBER, RIGHT PLS_INTEGER := 0)
+      RETURN NUMBER;
+
+   FUNCTION POWER (n NUMBER, e NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION LAST_DAY (RIGHT DATE)
+      RETURN DATE;
+
+   FUNCTION ADD_MONTHS (LEFT DATE, RIGHT NUMBER)
+      RETURN DATE;
+
+   FUNCTION ADD_MONTHS (LEFT NUMBER, RIGHT DATE)
+      RETURN DATE;
+
+   FUNCTION MONTHS_BETWEEN (LEFT DATE, RIGHT DATE)
+      RETURN NUMBER;
+
+   FUNCTION NEXT_DAY (LEFT DATE, RIGHT VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION ROUND (RIGHT DATE)
+      RETURN DATE;
+
+   FUNCTION NEW_TIME (RIGHT DATE, middle VARCHAR2, LEFT VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION NVL (d1 DATE, d2 DATE)
+      RETURN DATE;
+
+   FUNCTION TRUNC (LEFT DATE)
+      RETURN DATE;
+
+   FUNCTION TRUNC (LEFT DATE, RIGHT VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION ROUND (LEFT DATE, RIGHT VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION TO_DATE (RIGHT VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION TO_DATE (LEFT VARCHAR2, RIGHT VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION TO_DATE (LEFT NUMBER, RIGHT VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION TO_DATE (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION TO_CHAR (RIGHT VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT DATE, RIGHT VARCHAR2)
+      RETURN VARCHAR2;
+
+   PRAGMA builtin ('TO_CHAR', 41, 12, 19);
+
+   FUNCTION TO_CHAR (LEFT NUMBER, RIGHT VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_NUMBER (RIGHT NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION TO_NUMBER (RIGHT VARCHAR2)
+      RETURN NUMBER;
+
+   FUNCTION TO_NUMBER (LEFT VARCHAR2, format VARCHAR2)
+      RETURN NUMBER;
+
+   FUNCTION TO_NUMBER (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN NUMBER;
+
+   PROCEDURE set_transaction_use (vc VARCHAR2);
+
+   PROCEDURE COMMIT;
+
+   PROCEDURE commit_cm (vc VARCHAR2);
+
+   PROCEDURE rollback_nr;
+
+   PROCEDURE rollback_sv (save_point CHAR);
+
+   --PROCEDURE SAVEPOINT (save_point CHAR);
+   FUNCTION SYSDATE
+      RETURN DATE;
+
+   FUNCTION UID
+      RETURN PLS_INTEGER;
+
+   FUNCTION USER
+      RETURN VARCHAR2;
+
+   FUNCTION USERENV (envstr VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION nullfn (str VARCHAR2)
+      RETURN RAW;
+
+   FUNCTION HEXTORAW (c VARCHAR2)
+      RETURN RAW;
+
+   FUNCTION RAWTOHEX (r RAW)
+      RETURN VARCHAR2;
+
+   FUNCTION CHARTOROWID (str VARCHAR2)
+      RETURN ROWID;
+
+   FUNCTION ROWIDTOCHAR (str ROWID)
+      RETURN VARCHAR2;
+
+   FUNCTION NLSSORT (c VARCHAR2)
+      RETURN RAW;
+
+   FUNCTION NLSSORT (c VARCHAR2, c2 VARCHAR2)
+      RETURN RAW;
+
+   FUNCTION NLS_UPPER (ch VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION NLS_UPPER (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION NLS_LOWER (ch VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION NLS_LOWER (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION NLS_INITCAP (ch VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION NLS_INITCAP (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION LENGTHB (ch VARCHAR2)
+      RETURN NUMBER;
+
+   FUNCTION SUBSTRB (
+      str1   VARCHAR2
+    , pos    PLS_INTEGER
+    , len    PLS_INTEGER := 2147483647
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION INSTRB (
+      str1   VARCHAR2
+    , str2   VARCHAR2
+    , pos    PLS_INTEGER := 1
+    , nth    POSITIVE := 1
+   )
+      RETURN PLS_INTEGER;
+
+   FUNCTION TO_SINGLE_BYTE (c VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_MULTI_BYTE (c VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT DATE, format VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT NUMBER, format VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION NLS_CHARSET_NAME (csetid PLS_INTEGER)
+      RETURN VARCHAR2;
+
+   FUNCTION NLS_CHARSET_ID (csetname VARCHAR2)
+      RETURN PLS_INTEGER;
+
+   FUNCTION NLS_CHARSET_DECL_LEN (bytecnt NUMBER, csetid NUMBER)
+      RETURN PLS_INTEGER;
+
+   FUNCTION CONVERT (src VARCHAR2, destcset VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION CONVERT (src VARCHAR2, destcset VARCHAR2, srccset VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION sys$standard_translate (src VARCHAR2, csn VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION VSIZE (e NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION VSIZE (e DATE)
+      RETURN NUMBER;
+
+   FUNCTION VSIZE (e VARCHAR2)
+      RETURN NUMBER;
+
+   FUNCTION DUMP (
+      e     VARCHAR2
+    , df    PLS_INTEGER := NULL
+    , sp    PLS_INTEGER := NULL
+    , len   PLS_INTEGER := NULL
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION DUMP (
+      e     NUMBER
+    , df    PLS_INTEGER := NULL
+    , sp    PLS_INTEGER := NULL
+    , len   PLS_INTEGER := NULL
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION DUMP (
+      e     DATE
+    , df    PLS_INTEGER := NULL
+    , sp    PLS_INTEGER := NULL
+    , len   PLS_INTEGER := NULL
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION ACOS (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION ASIN (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION ATAN (n NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION ATAN2 (x NUMBER, y NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION EMPTY_CLOB
+      RETURN CLOB;
+
+   FUNCTION EMPTY_BLOB
+      RETURN BLOB;
+
+   FUNCTION BFILENAME (DIRECTORY VARCHAR2, filename VARCHAR2)
+      RETURN BFILE;
+
+   FUNCTION sys$dsintervalsubtract (
+      LEFT    timestamp_tz_unconstrained
+    , RIGHT   timestamp_tz_unconstrained
+   )
+      RETURN dsinterval_unconstrained;
+
+   FUNCTION sys$ymintervalsubtract (
+      LEFT    timestamp_tz_unconstrained
+    , RIGHT   timestamp_tz_unconstrained
+   )
+      RETURN yminterval_unconstrained;
+
+   FUNCTION CURRENT_DATE
+      RETURN DATE;
+
+   FUNCTION current_time
+      RETURN time_tz_unconstrained;
+
+   FUNCTION CURRENT_TIMESTAMP
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION to_time (RIGHT VARCHAR2)
+      RETURN time_unconstrained;
+
+   FUNCTION TO_TIMESTAMP (RIGHT VARCHAR2)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION to_time_tz (RIGHT VARCHAR2)
+      RETURN time_tz_unconstrained;
+
+   PRAGMA builtin ('TO_TIME_TZ', 0, 15, 5);
+
+   FUNCTION TO_TIMESTAMP_TZ (RIGHT VARCHAR2)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION TO_YMINTERVAL (RIGHT VARCHAR2)
+      RETURN yminterval_unconstrained;
+
+   FUNCTION TO_DSINTERVAL (RIGHT VARCHAR2)
+      RETURN dsinterval_unconstrained;
+
+   FUNCTION to_time (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN time_unconstrained;
+
+   FUNCTION to_time (LEFT VARCHAR2, format VARCHAR2)
+      RETURN time_unconstrained;
+
+   FUNCTION TO_TIMESTAMP (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION TO_TIMESTAMP (LEFT VARCHAR2, format VARCHAR2)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION TO_TIMESTAMP_TZ (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION TO_TIMESTAMP_TZ (LEFT VARCHAR2, format VARCHAR2)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION to_time_tz (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN time_tz_unconstrained;
+
+   FUNCTION to_time_tz (LEFT VARCHAR2, format VARCHAR2)
+      RETURN time_tz_unconstrained;
+
+   FUNCTION TO_DSINTERVAL (RIGHT VARCHAR2, parms VARCHAR2)
+      RETURN dsinterval_unconstrained;
+
+   FUNCTION NUMTOYMINTERVAL (numerator NUMBER, units VARCHAR2)
+      RETURN yminterval_unconstrained;
+
+   FUNCTION NUMTODSINTERVAL (numerator NUMBER, units VARCHAR2)
+      RETURN dsinterval_unconstrained;
+
+   FUNCTION SYS_GUID
+      RETURN RAW;
+
+   FUNCTION SYS_CONTEXT (namespace VARCHAR2, ATTRIBUTE VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TRIM (v VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION SYS_CONTEXT (
+      namespace     VARCHAR2
+    , ATTRIBUTE     VARCHAR2
+    , newoptional   VARCHAR2
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION to_time (RIGHT time_tz_unconstrained)
+      RETURN time_unconstrained;
+
+   FUNCTION to_time_tz (RIGHT time_unconstrained)
+      RETURN time_tz_unconstrained;
+
+   FUNCTION TO_TIMESTAMP (RIGHT timestamp_tz_unconstrained)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION TO_TIMESTAMP_TZ (RIGHT timestamp_unconstrained)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION sys_at_time_zone (t time_tz_unconstrained, i VARCHAR2)
+      RETURN time_tz_unconstrained;
+
+   FUNCTION sys_at_time_zone (t timestamp_tz_unconstrained, i VARCHAR2)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION SYSTIMESTAMP
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION DBTIMEZONE
+      RETURN VARCHAR2;
+
+   FUNCTION SESSIONTIMEZONE
+      RETURN VARCHAR2;
+
+   FUNCTION LOCALTIMESTAMP
+      RETURN timestamp_unconstrained;
+
+   FUNCTION localtime
+      RETURN time_unconstrained;
+
+   FUNCTION TO_TIMESTAMP (RIGHT DATE)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION sys_literaltoyminterval (numerator VARCHAR2, units VARCHAR2)
+      RETURN yminterval_unconstrained;
+
+   FUNCTION sys_literaltodsinterval (numerator VARCHAR2, units VARCHAR2)
+      RETURN dsinterval_unconstrained;
+
+   FUNCTION sys_literaltotime (numerator VARCHAR2)
+      RETURN time_unconstrained;
+
+   FUNCTION sys_literaltotztime (numerator VARCHAR2)
+      RETURN time_tz_unconstrained;
+
+   FUNCTION sys_literaltotimestamp (numerator VARCHAR2)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION sys_literaltotztimestamp (numerator VARCHAR2)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION sys_literaltodate (numerator VARCHAR2)
+      RETURN DATE;
+
+   FUNCTION TO_TIMESTAMP (arg timestamp_ltz_unconstrained)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION TO_TIMESTAMP_TZ (arg DATE)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION TO_TIMESTAMP_TZ (arg timestamp_ltz_unconstrained)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION LENGTH (ch CLOB)
+      RETURN INTEGER;
+
+   FUNCTION LENGTHB (ch CLOB)
+      RETURN INTEGER;
+
+   FUNCTION LENGTH (bl BLOB)
+      RETURN INTEGER;
+
+   FUNCTION LENGTHB (bl BLOB)
+      RETURN INTEGER;
+
+   FUNCTION SUBSTR (
+      str1   CLOB
+    , pos    INTEGER
+    , len    INTEGER := 18446744073709551615
+   )
+      RETURN CLOB;
+
+   FUNCTION SUBSTRB (
+      str1   CLOB
+    , pos    INTEGER
+    , len    INTEGER := 18446744073709551615
+   )
+      RETURN CLOB;
+
+   FUNCTION INSTR (str1 CLOB, str2 CLOB, pos INTEGER := 1, nth INTEGER := 1)
+      RETURN INTEGER;
+
+   FUNCTION INSTRB (str1 CLOB, str2 CLOB, pos INTEGER := 1, nth INTEGER := 1)
+      RETURN INTEGER;
+
+   FUNCTION CONCAT (LEFT CLOB, RIGHT CLOB)
+      RETURN CLOB;
+
+   FUNCTION UPPER (ch CLOB)
+      RETURN CLOB;
+
+   FUNCTION LOWER (ch CLOB)
+      RETURN CLOB;
+
+   FUNCTION LPAD (str1 CLOB, len INTEGER, pad CLOB)
+      RETURN CLOB;
+
+   FUNCTION LPAD (str1 CLOB, len INTEGER)
+      RETURN CLOB;
+
+   FUNCTION RPAD (str1 CLOB, len INTEGER, pad CLOB)
+      RETURN CLOB;
+
+   FUNCTION RPAD (str1 CLOB, len INTEGER)
+      RETURN CLOB;
+
+   FUNCTION LTRIM (str1 CLOB, tset CLOB)
+      RETURN CLOB;
+
+   FUNCTION LTRIM (str1 CLOB)
+      RETURN CLOB;
+
+   FUNCTION RTRIM (str1 CLOB, tset CLOB)
+      RETURN CLOB;
+
+   FUNCTION RTRIM (str1 CLOB)
+      RETURN CLOB;
+
+   FUNCTION TRIM (v CLOB)
+      RETURN CLOB;
+
+   FUNCTION NVL (s1 CLOB, s2 CLOB)
+      RETURN CLOB;
+
+   FUNCTION REPLACE (srcstr CLOB, oldsub CLOB, newsub CLOB := NULL)
+      RETURN CLOB;
+
+   FUNCTION TO_CLOB (RIGHT VARCHAR2)
+      RETURN CLOB;
+
+   FUNCTION to_blob (RIGHT RAW)
+      RETURN BLOB;
+
+   FUNCTION to_raw (RIGHT BLOB)
+      RETURN RAW;
+
+   FUNCTION NULLIF (v1 VARCHAR2, v2 VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION NULLIF (v1 BOOLEAN, v2 BOOLEAN)
+      RETURN VARCHAR2;
+
+   FUNCTION TZ_OFFSET (region VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION FROM_TZ (t timestamp_unconstrained, TIMEZONE VARCHAR2)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION GREATEST (pattern time_unconstrained)
+      RETURN time_unconstrained;
+
+   FUNCTION GREATEST (pattern time_tz_unconstrained)
+      RETURN time_tz_unconstrained;
+
+   FUNCTION GREATEST (pattern timestamp_unconstrained)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION GREATEST (pattern timestamp_tz_unconstrained)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION GREATEST (pattern timestamp_ltz_unconstrained)
+      RETURN timestamp_ltz_unconstrained;
+
+   FUNCTION GREATEST (pattern yminterval_unconstrained)
+      RETURN yminterval_unconstrained;
+
+   FUNCTION GREATEST (pattern dsinterval_unconstrained)
+      RETURN dsinterval_unconstrained;
+
+   FUNCTION LEAST (pattern time_unconstrained)
+      RETURN time_unconstrained;
+
+   FUNCTION LEAST (pattern time_tz_unconstrained)
+      RETURN time_tz_unconstrained;
+
+   FUNCTION LEAST (pattern timestamp_unconstrained)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION LEAST (pattern timestamp_tz_unconstrained)
+      RETURN timestamp_tz_unconstrained;
+
+   FUNCTION LEAST (pattern timestamp_ltz_unconstrained)
+      RETURN timestamp_ltz_unconstrained;
+
+   FUNCTION LEAST (pattern yminterval_unconstrained)
+      RETURN yminterval_unconstrained;
+
+   FUNCTION LEAST (pattern dsinterval_unconstrained)
+      RETURN dsinterval_unconstrained;
+
+   FUNCTION TO_CHAR (LEFT time_unconstrained, format VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT time_unconstrained, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (
+      LEFT     time_tz_unconstrained
+    , format   VARCHAR2
+    , parms    VARCHAR2
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT time_tz_unconstrained, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (
+      LEFT     timestamp_unconstrained
+    , format   VARCHAR2
+    , parms    VARCHAR2
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT timestamp_unconstrained, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (
+      LEFT     timestamp_tz_unconstrained
+    , format   VARCHAR2
+    , parms    VARCHAR2
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT timestamp_tz_unconstrained, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (
+      LEFT     timestamp_ltz_unconstrained
+    , format   VARCHAR2
+    , parms    VARCHAR2
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT timestamp_ltz_unconstrained, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (
+      LEFT     yminterval_unconstrained
+    , format   VARCHAR2
+    , parms    VARCHAR2
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT yminterval_unconstrained, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (
+      LEFT     dsinterval_unconstrained
+    , format   VARCHAR2
+    , parms    VARCHAR2
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT dsinterval_unconstrained, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION CONVERT (srcstr CLOB, dstcsn VARCHAR2)
+      RETURN CLOB;
+
+   FUNCTION CONVERT (srcstr CLOB, dstcsn VARCHAR2, srccsn VARCHAR2)
+      RETURN CLOB;
+
+   FUNCTION NLS_UPPER (ch CLOB, parms VARCHAR2)
+      RETURN CLOB;
+
+   FUNCTION NLS_UPPER (ch CLOB)
+      RETURN CLOB;
+
+   FUNCTION NLS_LOWER (ch CLOB, parms VARCHAR2)
+      RETURN CLOB;
+
+   FUNCTION NLS_LOWER (ch CLOB)
+      RETURN CLOB;
+
+   FUNCTION COMPOSE (ch VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION DECOMPOSE (ch VARCHAR2, canmode IN VARCHAR2 DEFAULT 'CANONICAL')
+      RETURN VARCHAR2;
+
+   FUNCTION SYS_EXTRACT_UTC (t timestamp_tz_unconstrained)
+      RETURN timestamp_unconstrained;
+
+   FUNCTION REGEXP_LIKE (
+      srcstr     VARCHAR2
+    , pattern    VARCHAR2
+    , modifier   VARCHAR2 DEFAULT NULL
+   )
+      RETURN BOOLEAN;
+
+   FUNCTION REGEXP_LIKE (
+      srcstr     CLOB
+    , pattern    VARCHAR2
+    , modifier   VARCHAR2 DEFAULT NULL
+   )
+      RETURN BOOLEAN;
+
+   FUNCTION REGEXP_INSTR (
+      srcstr        VARCHAR2
+    , pattern       VARCHAR2
+    , POSITION      PLS_INTEGER := 1
+    , occurrence    PLS_INTEGER := 1
+    , returnparam   PLS_INTEGER := 0
+    , modifier      VARCHAR2 DEFAULT NULL
+   )
+      RETURN PLS_INTEGER;
+
+   FUNCTION REGEXP_INSTR (
+      srcstr        CLOB
+    , pattern       VARCHAR2
+    , POSITION      INTEGER := 1
+    , occurrence    INTEGER := 1
+    , returnparam   PLS_INTEGER := 0
+    , modifier      VARCHAR2 DEFAULT NULL
+   )
+      RETURN INTEGER;
+
+   FUNCTION REGEXP_SUBSTR (
+      srcstr       VARCHAR2
+    , pattern      VARCHAR2
+    , POSITION     PLS_INTEGER := 1
+    , occurrence   PLS_INTEGER := 1
+    , modifier     VARCHAR2 DEFAULT NULL
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION REGEXP_SUBSTR (
+      srcstr       CLOB
+    , pattern      VARCHAR2
+    , POSITION     INTEGER := 1
+    , occurrence   INTEGER := 1
+    , modifier     VARCHAR2 DEFAULT NULL
+   )
+      RETURN CLOB;
+
+   FUNCTION REGEXP_REPLACE (
+      srcstr       VARCHAR2
+    , pattern      VARCHAR2
+    , replacestr   VARCHAR2 DEFAULT NULL
+    , POSITION     PLS_INTEGER := 1
+    , occurrence   PLS_INTEGER := 0
+    , modifier     VARCHAR2 DEFAULT NULL
+   )
+      RETURN VARCHAR2;
+
+   FUNCTION REGEXP_REPLACE (
+      srcstr       CLOB
+    , pattern      VARCHAR2
+    , replacestr   CLOB DEFAULT NULL
+    , POSITION     INTEGER := 1
+    , occurrence   INTEGER := 0
+    , modifier     VARCHAR2 DEFAULT NULL
+   )
+      RETURN CLOB;
+
+   FUNCTION REGEXP_REPLACE (
+      srcstr       CLOB
+    , pattern      VARCHAR2
+    , replacestr   VARCHAR2 DEFAULT NULL
+    , POSITION     INTEGER := 1
+    , occurrence   INTEGER := 0
+    , modifier     VARCHAR2 DEFAULT NULL
+   )
+      RETURN CLOB;
+
+   FUNCTION TO_BINARY_FLOAT (RIGHT BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION TO_BINARY_FLOAT (LEFT VARCHAR2, format VARCHAR2)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION TO_BINARY_FLOAT (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION TO_BINARY_DOUBLE (RIGHT BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION TO_BINARY_DOUBLE (LEFT VARCHAR2, format VARCHAR2)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION TO_BINARY_DOUBLE (LEFT VARCHAR2, format VARCHAR2, parms VARCHAR2)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION TO_CHAR (LEFT BINARY_FLOAT, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT BINARY_DOUBLE, format VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT BINARY_FLOAT, format VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_CHAR (LEFT BINARY_DOUBLE, format VARCHAR2, parms VARCHAR2)
+      RETURN VARCHAR2;
+
+   FUNCTION TO_NCHAR (LEFT BINARY_FLOAT, format NVARCHAR2)
+      RETURN NVARCHAR2;
+
+   FUNCTION TO_NCHAR (LEFT BINARY_DOUBLE, format NVARCHAR2)
+      RETURN NVARCHAR2;
+
+   FUNCTION TO_NCHAR (LEFT BINARY_FLOAT, format NVARCHAR2, parms NVARCHAR2)
+      RETURN NVARCHAR2;
+
+   FUNCTION TO_NCHAR (LEFT BINARY_DOUBLE, format NVARCHAR2, parms NVARCHAR2)
+      RETURN NVARCHAR2;
+
+   FUNCTION REMAINDER (n1 NUMBER, n2 NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION REMAINDER (f1 BINARY_FLOAT, f2 BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION REMAINDER (d1 BINARY_DOUBLE, d2 BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION MOD (f1 BINARY_FLOAT, f2 BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION FLOOR (f BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION CEIL (f BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION SIGN (f BINARY_FLOAT)
+      RETURN SIGNTYPE;
+
+   FUNCTION SQRT (f BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION TRUNC (f BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION ROUND (LEFT BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION ABS (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION ACOS (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION ASIN (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION ATAN (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION ATAN2 (x BINARY_DOUBLE, y BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION FLOOR (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION CEIL (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION SQRT (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION SIGN (d BINARY_DOUBLE)
+      RETURN SIGNTYPE;
+
+   FUNCTION COS (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION SIN (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION TAN (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION COSH (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION SINH (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION TANH (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION EXP (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION LN (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION LOG (LEFT BINARY_DOUBLE, RIGHT BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION TRUNC (d BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION ROUND (LEFT BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION POWER (d BINARY_DOUBLE, e BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION NANVL (n1 NUMBER, n2 NUMBER)
+      RETURN NUMBER;
+
+   FUNCTION NANVL (f1 BINARY_FLOAT, f2 BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION NANVL (d1 BINARY_DOUBLE, d2 BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION GREATEST (pattern BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION GREATEST (pattern BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION LEAST (pattern BINARY_FLOAT)
+      RETURN BINARY_FLOAT;
+
+   FUNCTION LEAST (pattern BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE;
+
+   FUNCTION NVL (i1 PLS_INTEGER, i2 PLS_INTEGER)
+      RETURN PLS_INTEGER;
+
+   FUNCTION TRUNC (i PLS_INTEGER, places PLS_INTEGER := 0)
+      RETURN PLS_INTEGER;
+
+   FUNCTION ROUND (i PLS_INTEGER, places PLS_INTEGER := 0)
+      RETURN PLS_INTEGER;
+
+   FUNCTION SIGN (i PLS_INTEGER)
+      RETURN SIGNTYPE;
+
+   FUNCTION GREATEST (pattern PLS_INTEGER)
+      RETURN PLS_INTEGER;
+
+   FUNCTION LEAST (pattern PLS_INTEGER)
+      RETURN PLS_INTEGER;
+END plsql_standard;
+/
+
+CREATE OR REPLACE PACKAGE BODY plsql_standard
+/*
+Overview: The plsql_standard package is an API to built-in functions
+and procedures in the STANDARD package.
+
+We will use this as the launchpad from which to build a regression
+test script for the PL/SQL language using Quest Code Tester.
+
+Author: Steven Feuerstein, steven.feuerstein@quest.com
+
+*/
+IS
+   FUNCTION ABS (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN ABS (d => d);
+   END ABS;
+
+   FUNCTION ACOS (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN ACOS (n => n);
+   END ACOS;
+
+   FUNCTION ACOS (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN ACOS (d => d);
+   END ACOS;
+
+   FUNCTION ADD_MONTHS (LEFT IN DATE, RIGHT IN NUMBER)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN ADD_MONTHS (LEFT => LEFT, RIGHT => RIGHT);
+   END ADD_MONTHS;
+
+   FUNCTION ADD_MONTHS (LEFT IN NUMBER, RIGHT IN DATE)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN ADD_MONTHS (LEFT => LEFT, RIGHT => RIGHT);
+   END ADD_MONTHS;
+
+   FUNCTION ASCII (ch IN VARCHAR2)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN ASCII (ch => ch);
+   END ASCII;
+
+   FUNCTION ASCIISTR (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN ASCIISTR (ch => ch);
+   END ASCIISTR;
+
+   FUNCTION ASIN (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN ASIN (n => n);
+   END ASIN;
+
+   FUNCTION ASIN (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN ASIN (d => d);
+   END ASIN;
+
+   FUNCTION ATAN (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN ATAN (n => n);
+   END ATAN;
+
+   FUNCTION ATAN (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN ATAN (d => d);
+   END ATAN;
+
+   FUNCTION ATAN2 (x IN NUMBER, y IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN ATAN2 (x => x, y => y);
+   END ATAN2;
+
+   FUNCTION ATAN2 (x IN BINARY_DOUBLE, y IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN ATAN2 (x => x, y => y);
+   END ATAN2;
+
+   FUNCTION BFILENAME (DIRECTORY IN VARCHAR2, filename IN VARCHAR2)
+      RETURN BFILE
+   IS
+   BEGIN
+      RETURN BFILENAME (DIRECTORY => DIRECTORY, filename => filename);
+   END BFILENAME;
+
+   FUNCTION BITAND (LEFT IN PLS_INTEGER, RIGHT IN PLS_INTEGER)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN BITAND (LEFT => LEFT, RIGHT => RIGHT);
+   END BITAND;
+
+   FUNCTION BITAND (LEFT IN INTEGER, RIGHT IN INTEGER)
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN BITAND (LEFT => LEFT, RIGHT => RIGHT);
+   END BITAND;
+
+   FUNCTION CEIL (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN CEIL (n => n);
+   END CEIL;
+
+   FUNCTION CEIL (f IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN CEIL (f => f);
+   END CEIL;
+
+   FUNCTION CEIL (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN CEIL (d => d);
+   END CEIL;
+
+   FUNCTION CHARTOROWID (str IN VARCHAR2)
+      RETURN ROWID
+   IS
+   BEGIN
+      RETURN CHARTOROWID (str => str);
+   END CHARTOROWID;
+
+   FUNCTION CHR (n IN PLS_INTEGER)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN CHR (n => n);
+   END CHR;
+
+   PROCEDURE COMMIT
+   IS
+   BEGIN
+      COMMIT;
+   END COMMIT;
+
+   PROCEDURE commit_cm (vc IN VARCHAR2)
+   IS
+   BEGIN
+      commit_cm (vc => vc);
+   END commit_cm;
+
+   FUNCTION COMPOSE (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN COMPOSE (ch => ch);
+   END COMPOSE;
+
+   FUNCTION CONCAT (LEFT IN VARCHAR2, RIGHT IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN CONCAT (LEFT => LEFT, RIGHT => RIGHT);
+   END CONCAT;
+
+   FUNCTION CONCAT (LEFT IN CLOB, RIGHT IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN CONCAT (LEFT => LEFT, RIGHT => RIGHT);
+   END CONCAT;
+
+   FUNCTION CONVERT (src IN VARCHAR2, destcset IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN CONVERT (src => src, destcset => destcset);
+   END CONVERT;
+
+   FUNCTION CONVERT (src IN VARCHAR2, destcset IN VARCHAR2, srccset IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN CONVERT (src => src, destcset => destcset, srccset => srccset);
+   END CONVERT;
+
+   FUNCTION CONVERT (srcstr IN CLOB, dstcsn IN VARCHAR2)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN CONVERT (srcstr => srcstr, dstcsn => dstcsn);
+   END CONVERT;
+
+   FUNCTION CONVERT (srcstr IN CLOB, dstcsn IN VARCHAR2, srccsn IN VARCHAR2)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN CONVERT (srcstr => srcstr, dstcsn => dstcsn, srccsn => srccsn);
+   END CONVERT;
+
+   FUNCTION COS (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN COS (n => n);
+   END COS;
+
+   FUNCTION COS (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN COS (d => d);
+   END COS;
+
+   FUNCTION COSH (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN COSH (n => n);
+   END COSH;
+
+   FUNCTION COSH (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN COSH (d => d);
+   END COSH;
+
+   FUNCTION CURRENT_DATE
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN CURRENT_DATE;
+   END CURRENT_DATE;
+
+   FUNCTION current_time
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN current_time;
+   END current_time;
+
+   FUNCTION CURRENT_TIMESTAMP
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN CURRENT_TIMESTAMP;
+   END CURRENT_TIMESTAMP;
+
+   FUNCTION DBTIMEZONE
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN DBTIMEZONE;
+   END DBTIMEZONE;
+
+   FUNCTION DECOMPOSE (ch IN VARCHAR2, canmode IN VARCHAR2 DEFAULT 'CANONICAL')
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN DECOMPOSE (ch => ch, canmode => canmode);
+   END DECOMPOSE;
+
+   FUNCTION DUMP (
+      e     IN   VARCHAR2
+    , df    IN   PLS_INTEGER DEFAULT NULL
+    , sp    IN   PLS_INTEGER DEFAULT NULL
+    , len   IN   PLS_INTEGER DEFAULT NULL
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN DUMP (e => e, df => df, sp => sp, len => len);
+   END DUMP;
+
+   FUNCTION DUMP (
+      e     IN   NUMBER
+    , df    IN   PLS_INTEGER DEFAULT NULL
+    , sp    IN   PLS_INTEGER DEFAULT NULL
+    , len   IN   PLS_INTEGER DEFAULT NULL
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN DUMP (e => e, df => df, sp => sp, len => len);
+   END DUMP;
+
+   FUNCTION DUMP (
+      e     IN   DATE
+    , df    IN   PLS_INTEGER DEFAULT NULL
+    , sp    IN   PLS_INTEGER DEFAULT NULL
+    , len   IN   PLS_INTEGER DEFAULT NULL
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN DUMP (e => e, df => df, sp => sp, len => len);
+   END DUMP;
+
+   FUNCTION EMPTY_BLOB
+      RETURN BLOB
+   IS
+   BEGIN
+      RETURN EMPTY_BLOB;
+   END EMPTY_BLOB;
+
+   FUNCTION EMPTY_CLOB
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN EMPTY_CLOB;
+   END EMPTY_CLOB;
+
+   FUNCTION EXP (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN EXP (n => n);
+   END EXP;
+
+   FUNCTION EXP (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN EXP (d => d);
+   END EXP;
+
+   FUNCTION FLOOR (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN FLOOR (n => n);
+   END FLOOR;
+
+   FUNCTION FLOOR (f IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN FLOOR (f => f);
+   END FLOOR;
+
+   FUNCTION FLOOR (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN FLOOR (d => d);
+   END FLOOR;
+
+   FUNCTION FROM_TZ (t IN timestamp_unconstrained, TIMEZONE IN VARCHAR2)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN FROM_TZ (t => t, TIMEZONE => TIMEZONE);
+   END FROM_TZ;
+
+   FUNCTION GREATEST (pattern IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN DATE)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN time_unconstrained)
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN time_tz_unconstrained)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN timestamp_unconstrained)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN timestamp_tz_unconstrained)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN timestamp_ltz_unconstrained)
+      RETURN timestamp_ltz_unconstrained
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN yminterval_unconstrained)
+      RETURN yminterval_unconstrained
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN dsinterval_unconstrained)
+      RETURN dsinterval_unconstrained
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION GREATEST (pattern IN PLS_INTEGER)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN GREATEST (pattern => pattern);
+   END GREATEST;
+
+   FUNCTION HEXTORAW (c IN VARCHAR2)
+      RETURN RAW
+   IS
+   BEGIN
+      RETURN HEXTORAW (c => c);
+   END HEXTORAW;
+
+   FUNCTION INITCAP (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN INITCAP (ch => ch);
+   END INITCAP;
+
+   FUNCTION INSTR (
+      str1   IN   VARCHAR2
+    , str2   IN   VARCHAR2
+    , pos    IN   PLS_INTEGER DEFAULT 1
+    , nth    IN   POSITIVE DEFAULT 1
+   )
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN INSTR (str1 => str1, str2 => str2, pos => pos, nth => nth);
+   END INSTR;
+
+   FUNCTION INSTR (
+      str1   IN   CLOB
+    , str2   IN   CLOB
+    , pos    IN   INTEGER DEFAULT 1
+    , nth    IN   INTEGER DEFAULT 1
+   )
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN INSTR (str1 => str1, str2 => str2, pos => pos, nth => nth);
+   END INSTR;
+
+   FUNCTION INSTRB (
+      str1   IN   VARCHAR2
+    , str2   IN   VARCHAR2
+    , pos    IN   PLS_INTEGER DEFAULT 1
+    , nth    IN   POSITIVE DEFAULT 1
+   )
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN INSTRB (str1 => str1, str2 => str2, pos => pos, nth => nth);
+   END INSTRB;
+
+   FUNCTION INSTRB (
+      str1   IN   CLOB
+    , str2   IN   CLOB
+    , pos    IN   INTEGER DEFAULT 1
+    , nth    IN   INTEGER DEFAULT 1
+   )
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN INSTRB (str1 => str1, str2 => str2, pos => pos, nth => nth);
+   END INSTRB;
+
+   FUNCTION LAST_DAY (RIGHT IN DATE)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN LAST_DAY (RIGHT => RIGHT);
+   END LAST_DAY;
+
+   FUNCTION LEAST (pattern IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN DATE)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN time_unconstrained)
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN time_tz_unconstrained)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN timestamp_unconstrained)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN timestamp_tz_unconstrained)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN timestamp_ltz_unconstrained)
+      RETURN timestamp_ltz_unconstrained
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN yminterval_unconstrained)
+      RETURN yminterval_unconstrained
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN dsinterval_unconstrained)
+      RETURN dsinterval_unconstrained
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LEAST (pattern IN PLS_INTEGER)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN LEAST (pattern => pattern);
+   END LEAST;
+
+   FUNCTION LENGTH (ch IN VARCHAR2)
+      RETURN NATURAL
+   IS
+   BEGIN
+      RETURN LENGTH (ch => ch);
+   END LENGTH;
+
+   FUNCTION LENGTH (ch IN CLOB)
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN LENGTH (ch => ch);
+   END LENGTH;
+
+   FUNCTION LENGTH (bl IN BLOB)
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN LENGTH (bl => bl);
+   END LENGTH;
+
+   FUNCTION LENGTHB (ch IN VARCHAR2)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN LENGTHB (ch => ch);
+   END LENGTHB;
+
+   FUNCTION LENGTHB (ch IN CLOB)
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN LENGTHB (ch => ch);
+   END LENGTHB;
+
+   FUNCTION LENGTHB (bl IN BLOB)
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN LENGTHB (bl => bl);
+   END LENGTHB;
+
+   FUNCTION LN (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN LN (n => n);
+   END LN;
+
+   FUNCTION LN (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN LN (d => d);
+   END LN;
+
+   FUNCTION localtime
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN localtime;
+   END localtime;
+
+   FUNCTION LOCALTIMESTAMP
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN LOCALTIMESTAMP;
+   END LOCALTIMESTAMP;
+
+   FUNCTION LOG (LEFT IN NUMBER, RIGHT IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN LOG (LEFT => LEFT, RIGHT => RIGHT);
+   END LOG;
+
+   FUNCTION LOG (LEFT IN BINARY_DOUBLE, RIGHT IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN LOG (LEFT => LEFT, RIGHT => RIGHT);
+   END LOG;
+
+   FUNCTION LOWER (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN LOWER (ch => ch);
+   END LOWER;
+
+   FUNCTION LOWER (ch IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN LOWER (ch => ch);
+   END LOWER;
+
+   FUNCTION LPAD (str1 IN VARCHAR2, len IN PLS_INTEGER, pad IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN LPAD (str1 => str1, len => len, pad => pad);
+   END LPAD;
+
+   FUNCTION LPAD (str1 IN VARCHAR2, len IN PLS_INTEGER)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN LPAD (str1 => str1, len => len);
+   END LPAD;
+
+   FUNCTION LPAD (str1 IN CLOB, len IN INTEGER, pad IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN LPAD (str1 => str1, len => len, pad => pad);
+   END LPAD;
+
+   FUNCTION LPAD (str1 IN CLOB, len IN INTEGER)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN LPAD (str1 => str1, len => len);
+   END LPAD;
+
+   FUNCTION LTRIM (str1 IN VARCHAR2 DEFAULT ' ', tset IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN LTRIM (str1 => str1, tset => tset);
+   END LTRIM;
+
+   FUNCTION LTRIM (str1 IN VARCHAR2 DEFAULT ' ')
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN LTRIM (str1 => str1);
+   END LTRIM;
+
+   FUNCTION LTRIM (str1 IN CLOB, tset IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN LTRIM (str1 => str1, tset => tset);
+   END LTRIM;
+
+   FUNCTION LTRIM (str1 IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN LTRIM (str1 => str1);
+   END LTRIM;
+
+   FUNCTION MOD (f1 IN BINARY_FLOAT, f2 IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN MOD (f1 => f1, f2 => f2);
+   END MOD;
+
+   FUNCTION MONTHS_BETWEEN (LEFT IN DATE, RIGHT IN DATE)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN MONTHS_BETWEEN (LEFT => LEFT, RIGHT => RIGHT);
+   END MONTHS_BETWEEN;
+
+   FUNCTION NANVL (n1 IN NUMBER, n2 IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN NANVL (n1 => n1, n2 => n2);
+   END NANVL;
+
+   FUNCTION NANVL (f1 IN BINARY_FLOAT, f2 IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN NANVL (f1 => f1, f2 => f2);
+   END NANVL;
+
+   FUNCTION NANVL (d1 IN BINARY_DOUBLE, d2 IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN NANVL (d1 => d1, d2 => d2);
+   END NANVL;
+
+   FUNCTION NEW_TIME (RIGHT IN DATE, middle IN VARCHAR2, LEFT IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN NEW_TIME (RIGHT => RIGHT, middle => middle, LEFT => LEFT);
+   END NEW_TIME;
+
+   FUNCTION NEXT_DAY (LEFT IN DATE, RIGHT IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN NEXT_DAY (LEFT => LEFT, RIGHT => RIGHT);
+   END NEXT_DAY;
+
+   FUNCTION NLSSORT (c IN VARCHAR2)
+      RETURN RAW
+   IS
+   BEGIN
+      RETURN NLSSORT (c => c);
+   END NLSSORT;
+
+   FUNCTION NLSSORT (c IN VARCHAR2, c2 IN VARCHAR2)
+      RETURN RAW
+   IS
+   BEGIN
+      RETURN NLSSORT (c => c, c2 => c2);
+   END NLSSORT;
+
+   FUNCTION NLS_CHARSET_DECL_LEN (bytecnt IN NUMBER, csetid IN NUMBER)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN NLS_CHARSET_DECL_LEN (bytecnt => bytecnt, csetid => csetid);
+   END NLS_CHARSET_DECL_LEN;
+
+   FUNCTION NLS_CHARSET_ID (csetname IN VARCHAR2)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN NLS_CHARSET_ID (csetname => csetname);
+   END NLS_CHARSET_ID;
+
+   FUNCTION NLS_CHARSET_NAME (csetid IN PLS_INTEGER)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NLS_CHARSET_NAME (csetid => csetid);
+   END NLS_CHARSET_NAME;
+
+   FUNCTION NLS_INITCAP (ch IN VARCHAR2, parms IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NLS_INITCAP (ch => ch, parms => parms);
+   END NLS_INITCAP;
+
+   FUNCTION NLS_INITCAP (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NLS_INITCAP (ch => ch);
+   END NLS_INITCAP;
+
+   FUNCTION NLS_LOWER (ch IN VARCHAR2, parms IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NLS_LOWER (ch => ch, parms => parms);
+   END NLS_LOWER;
+
+   FUNCTION NLS_LOWER (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NLS_LOWER (ch => ch);
+   END NLS_LOWER;
+
+   FUNCTION NLS_LOWER (ch IN CLOB, parms IN VARCHAR2)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN NLS_LOWER (ch => ch, parms => parms);
+   END NLS_LOWER;
+
+   FUNCTION NLS_LOWER (ch IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN NLS_LOWER (ch => ch);
+   END NLS_LOWER;
+
+   FUNCTION NLS_UPPER (ch IN VARCHAR2, parms IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NLS_UPPER (ch => ch, parms => parms);
+   END NLS_UPPER;
+
+   FUNCTION NLS_UPPER (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NLS_UPPER (ch => ch);
+   END NLS_UPPER;
+
+   FUNCTION NLS_UPPER (ch IN CLOB, parms IN VARCHAR2)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN NLS_UPPER (ch => ch, parms => parms);
+   END NLS_UPPER;
+
+   FUNCTION NLS_UPPER (ch IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN NLS_UPPER (ch => ch);
+   END NLS_UPPER;
+
+   FUNCTION nullfn (str IN VARCHAR2)
+      RETURN RAW
+   IS
+   BEGIN
+      RETURN nullfn (str => str);
+   END nullfn;
+
+   FUNCTION NULLIF (v1 IN VARCHAR2, v2 IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NULLIF (v1 => v1, v2 => v2);
+   END NULLIF;
+
+   FUNCTION NULLIF (v1 IN BOOLEAN, v2 IN BOOLEAN)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN NULLIF (v1 => v1, v2 => v2);
+   END NULLIF;
+
+   FUNCTION NUMTODSINTERVAL (numerator IN NUMBER, units IN VARCHAR2)
+      RETURN dsinterval_unconstrained
+   IS
+   BEGIN
+      RETURN NUMTODSINTERVAL (numerator => numerator, units => units);
+   END NUMTODSINTERVAL;
+
+   FUNCTION NUMTOYMINTERVAL (numerator IN NUMBER, units IN VARCHAR2)
+      RETURN yminterval_unconstrained
+   IS
+   BEGIN
+      RETURN NUMTOYMINTERVAL (numerator => numerator, units => units);
+   END NUMTOYMINTERVAL;
+
+   FUNCTION NVL (d1 IN DATE, d2 IN DATE)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN NVL (d1 => d1, d2 => d2);
+   END NVL;
+
+   FUNCTION NVL (s1 IN CLOB, s2 IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN NVL (s1 => s1, s2 => s2);
+   END NVL;
+
+   FUNCTION NVL (i1 IN PLS_INTEGER, i2 IN PLS_INTEGER)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN NVL (i1 => i1, i2 => i2);
+   END NVL;
+
+   FUNCTION POWER (n IN NUMBER, e IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN POWER (n => n, e => e);
+   END POWER;
+
+   FUNCTION POWER (d IN BINARY_DOUBLE, e IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN POWER (d => d, e => e);
+   END POWER;
+
+   FUNCTION RAWTOHEX (r IN RAW)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN RAWTOHEX (r => r);
+   END RAWTOHEX;
+
+   FUNCTION REGEXP_INSTR (
+      srcstr        IN   VARCHAR2
+    , pattern       IN   VARCHAR2
+    , POSITION      IN   PLS_INTEGER DEFAULT 1
+    , occurrence    IN   PLS_INTEGER DEFAULT 1
+    , returnparam   IN   PLS_INTEGER DEFAULT 0
+    , modifier      IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN REGEXP_INSTR (srcstr           => srcstr
+                         , pattern          => pattern
+                         , POSITION         => POSITION
+                         , occurrence       => occurrence
+                         , returnparam      => returnparam
+                         , modifier         => modifier
+                          );
+   END REGEXP_INSTR;
+
+   FUNCTION REGEXP_INSTR (
+      srcstr        IN   CLOB
+    , pattern       IN   VARCHAR2
+    , POSITION      IN   INTEGER DEFAULT 1
+    , occurrence    IN   INTEGER DEFAULT 1
+    , returnparam   IN   PLS_INTEGER DEFAULT 0
+    , modifier      IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN INTEGER
+   IS
+   BEGIN
+      RETURN REGEXP_INSTR (srcstr           => srcstr
+                         , pattern          => pattern
+                         , POSITION         => POSITION
+                         , occurrence       => occurrence
+                         , returnparam      => returnparam
+                         , modifier         => modifier
+                          );
+   END REGEXP_INSTR;
+
+   FUNCTION REGEXP_LIKE (
+      srcstr     IN   VARCHAR2
+    , pattern    IN   VARCHAR2
+    , modifier   IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN BOOLEAN
+   IS
+   BEGIN
+      RETURN REGEXP_LIKE (srcstr        => srcstr
+                        , pattern       => pattern
+                        , modifier      => modifier
+                         );
+   END REGEXP_LIKE;
+
+   FUNCTION REGEXP_LIKE (
+      srcstr     IN   CLOB
+    , pattern    IN   VARCHAR2
+    , modifier   IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN BOOLEAN
+   IS
+   BEGIN
+      RETURN REGEXP_LIKE (srcstr        => srcstr
+                        , pattern       => pattern
+                        , modifier      => modifier
+                         );
+   END REGEXP_LIKE;
+
+   FUNCTION REGEXP_REPLACE (
+      srcstr       IN   VARCHAR2
+    , pattern      IN   VARCHAR2
+    , replacestr   IN   VARCHAR2 DEFAULT NULL
+    , POSITION     IN   PLS_INTEGER DEFAULT 1
+    , occurrence   IN   PLS_INTEGER DEFAULT 0
+    , modifier     IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN REGEXP_REPLACE (srcstr          => srcstr
+                           , pattern         => pattern
+                           , replacestr      => replacestr
+                           , POSITION        => POSITION
+                           , occurrence      => occurrence
+                           , modifier        => modifier
+                            );
+   END REGEXP_REPLACE;
+
+   FUNCTION REGEXP_REPLACE (
+      srcstr       IN   CLOB
+    , pattern      IN   VARCHAR2
+    , replacestr   IN   CLOB DEFAULT NULL
+    , POSITION     IN   INTEGER DEFAULT 1
+    , occurrence   IN   INTEGER DEFAULT 0
+    , modifier     IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN REGEXP_REPLACE (srcstr          => srcstr
+                           , pattern         => pattern
+                           , replacestr      => replacestr
+                           , POSITION        => POSITION
+                           , occurrence      => occurrence
+                           , modifier        => modifier
+                            );
+   END REGEXP_REPLACE;
+
+   FUNCTION REGEXP_REPLACE (
+      srcstr       IN   CLOB
+    , pattern      IN   VARCHAR2
+    , replacestr   IN   VARCHAR2 DEFAULT NULL
+    , POSITION     IN   INTEGER DEFAULT 1
+    , occurrence   IN   INTEGER DEFAULT 0
+    , modifier     IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN REGEXP_REPLACE (srcstr          => srcstr
+                           , pattern         => pattern
+                           , replacestr      => replacestr
+                           , POSITION        => POSITION
+                           , occurrence      => occurrence
+                           , modifier        => modifier
+                            );
+   END REGEXP_REPLACE;
+
+   FUNCTION REGEXP_SUBSTR (
+      srcstr       IN   VARCHAR2
+    , pattern      IN   VARCHAR2
+    , POSITION     IN   PLS_INTEGER DEFAULT 1
+    , occurrence   IN   PLS_INTEGER DEFAULT 1
+    , modifier     IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN REGEXP_SUBSTR (srcstr          => srcstr
+                          , pattern         => pattern
+                          , POSITION        => POSITION
+                          , occurrence      => occurrence
+                          , modifier        => modifier
+                           );
+   END REGEXP_SUBSTR;
+
+   FUNCTION REGEXP_SUBSTR (
+      srcstr       IN   CLOB
+    , pattern      IN   VARCHAR2
+    , POSITION     IN   INTEGER DEFAULT 1
+    , occurrence   IN   INTEGER DEFAULT 1
+    , modifier     IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN REGEXP_SUBSTR (srcstr          => srcstr
+                          , pattern         => pattern
+                          , POSITION        => POSITION
+                          , occurrence      => occurrence
+                          , modifier        => modifier
+                           );
+   END REGEXP_SUBSTR;
+
+   FUNCTION REMAINDER (n1 IN NUMBER, n2 IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN REMAINDER (n1 => n1, n2 => n2);
+   END REMAINDER;
+
+   FUNCTION REMAINDER (f1 IN BINARY_FLOAT, f2 IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN REMAINDER (f1 => f1, f2 => f2);
+   END REMAINDER;
+
+   FUNCTION REMAINDER (d1 IN BINARY_DOUBLE, d2 IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN REMAINDER (d1 => d1, d2 => d2);
+   END REMAINDER;
+
+   FUNCTION REPLACE (
+      srcstr   IN   VARCHAR2
+    , oldsub   IN   VARCHAR2
+    , newsub   IN   VARCHAR2 DEFAULT NULL
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN REPLACE (srcstr => srcstr, oldsub => oldsub, newsub => newsub);
+   END REPLACE;
+
+   FUNCTION REPLACE (
+      srcstr   IN   CLOB
+    , oldsub   IN   CLOB
+    , newsub   IN   CLOB DEFAULT NULL
+   )
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN REPLACE (srcstr => srcstr, oldsub => oldsub, newsub => newsub);
+   END REPLACE;
+
+   PROCEDURE rollback_nr
+   IS
+   BEGIN
+      rollback_nr;
+   END rollback_nr;
+
+   PROCEDURE rollback_sv (save_point IN CHAR)
+   IS
+   BEGIN
+      rollback_sv (save_point => save_point);
+   END rollback_sv;
+
+   FUNCTION ROUND (LEFT IN NUMBER, RIGHT IN PLS_INTEGER DEFAULT 0)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN ROUND (LEFT => LEFT, RIGHT => RIGHT);
+   END ROUND;
+
+   FUNCTION ROUND (RIGHT IN DATE)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN ROUND (RIGHT => RIGHT);
+   END ROUND;
+
+   FUNCTION ROUND (LEFT IN DATE, RIGHT IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN ROUND (LEFT => LEFT, RIGHT => RIGHT);
+   END ROUND;
+
+   FUNCTION ROUND (LEFT IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN ROUND (LEFT => LEFT);
+   END ROUND;
+
+   FUNCTION ROUND (LEFT IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN ROUND (LEFT => LEFT);
+   END ROUND;
+
+   FUNCTION ROUND (i IN PLS_INTEGER, places IN PLS_INTEGER DEFAULT 0)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN ROUND (i => i, places => places);
+   END ROUND;
+
+   FUNCTION ROWIDTOCHAR (str IN ROWID)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN ROWIDTOCHAR (str => str);
+   END ROWIDTOCHAR;
+
+   FUNCTION RPAD (str1 IN VARCHAR2, len IN PLS_INTEGER, pad IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN RPAD (str1 => str1, len => len, pad => pad);
+   END RPAD;
+
+   FUNCTION RPAD (str1 IN VARCHAR2, len IN PLS_INTEGER)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN RPAD (str1 => str1, len => len);
+   END RPAD;
+
+   FUNCTION RPAD (str1 IN CLOB, len IN INTEGER, pad IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN RPAD (str1 => str1, len => len, pad => pad);
+   END RPAD;
+
+   FUNCTION RPAD (str1 IN CLOB, len IN INTEGER)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN RPAD (str1 => str1, len => len);
+   END RPAD;
+
+   FUNCTION RTRIM (str1 IN VARCHAR2 DEFAULT ' ', tset IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN RTRIM (str1 => str1, tset => tset);
+   END RTRIM;
+
+   FUNCTION RTRIM (str1 IN VARCHAR2 DEFAULT ' ')
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN RTRIM (str1 => str1);
+   END RTRIM;
+
+   FUNCTION RTRIM (str1 IN CLOB, tset IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN RTRIM (str1 => str1, tset => tset);
+   END RTRIM;
+
+   FUNCTION RTRIM (str1 IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN RTRIM (str1 => str1);
+   END RTRIM;
+
+      /*PROCEDURE SAVEPOINT
+      (
+          SAVE_POINT IN CHAR
+      )
+   IS
+   BEGIN
+
+     SAVEPOINT
+      (
+          SAVE_POINT => SAVE_POINT
+      )
+      ;
+   END SAVEPOINT;*/
+   FUNCTION SESSIONTIMEZONE
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SESSIONTIMEZONE;
+   END SESSIONTIMEZONE;
+
+   PROCEDURE set_transaction_use (vc IN VARCHAR2)
+   IS
+   BEGIN
+      set_transaction_use (vc => vc);
+   END set_transaction_use;
+
+   FUNCTION SIGN (n IN NUMBER)
+      RETURN SIGNTYPE
+   IS
+   BEGIN
+      RETURN SIGN (n => n);
+   END SIGN;
+
+   FUNCTION SIGN (f IN BINARY_FLOAT)
+      RETURN SIGNTYPE
+   IS
+   BEGIN
+      RETURN SIGN (f => f);
+   END SIGN;
+
+   FUNCTION SIGN (d IN BINARY_DOUBLE)
+      RETURN SIGNTYPE
+   IS
+   BEGIN
+      RETURN SIGN (d => d);
+   END SIGN;
+
+   FUNCTION SIGN (i IN PLS_INTEGER)
+      RETURN SIGNTYPE
+   IS
+   BEGIN
+      RETURN SIGN (i => i);
+   END SIGN;
+
+   FUNCTION SIN (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN SIN (n => n);
+   END SIN;
+
+   FUNCTION SIN (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN SIN (d => d);
+   END SIN;
+
+   FUNCTION SINH (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN SINH (n => n);
+   END SINH;
+
+   FUNCTION SINH (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN SINH (d => d);
+   END SINH;
+
+   FUNCTION SOUNDEX (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SOUNDEX (ch => ch);
+   END SOUNDEX;
+
+   FUNCTION SQLCODE
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN SQLCODE;
+   END SQLCODE;
+
+   FUNCTION SQLERRM
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SQLERRM;
+   END SQLERRM;
+
+   FUNCTION SQLERRM (code IN PLS_INTEGER)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SQLERRM (code => code);
+   END SQLERRM;
+
+   FUNCTION SQRT (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN SQRT (n => n);
+   END SQRT;
+
+   FUNCTION SQRT (f IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN SQRT (f => f);
+   END SQRT;
+
+   FUNCTION SQRT (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN SQRT (d => d);
+   END SQRT;
+
+   FUNCTION SUBSTR (
+      str1   IN   VARCHAR2
+    , pos    IN   PLS_INTEGER
+    , len    IN   PLS_INTEGER DEFAULT 2147483647
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SUBSTR (str1 => str1, pos => pos, len => len);
+   END SUBSTR;
+
+   FUNCTION SUBSTR (
+      str1   IN   CLOB
+    , pos    IN   INTEGER
+    , len    IN   INTEGER DEFAULT 18446744073709551615
+   )
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN SUBSTR (str1 => str1, pos => pos, len => len);
+   END SUBSTR;
+
+   FUNCTION SUBSTRB (
+      str1   IN   VARCHAR2
+    , pos    IN   PLS_INTEGER
+    , len    IN   PLS_INTEGER DEFAULT 2147483647
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SUBSTRB (str1 => str1, pos => pos, len => len);
+   END SUBSTRB;
+
+   FUNCTION SUBSTRB (
+      str1   IN   CLOB
+    , pos    IN   INTEGER
+    , len    IN   INTEGER DEFAULT 18446744073709551615
+   )
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN SUBSTRB (str1 => str1, pos => pos, len => len);
+   END SUBSTRB;
+
+   FUNCTION sys$dsintervalsubtract (
+      LEFT    IN   timestamp_tz_unconstrained
+    , RIGHT   IN   timestamp_tz_unconstrained
+   )
+      RETURN dsinterval_unconstrained
+   IS
+   BEGIN
+      RETURN sys$dsintervalsubtract (LEFT => LEFT, RIGHT => RIGHT);
+   END sys$dsintervalsubtract;
+
+   FUNCTION sys$standard_translate (src IN VARCHAR2, csn IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN sys$standard_translate (src => src, csn => csn);
+   END sys$standard_translate;
+
+   FUNCTION sys$ymintervalsubtract (
+      LEFT    IN   timestamp_tz_unconstrained
+    , RIGHT   IN   timestamp_tz_unconstrained
+   )
+      RETURN yminterval_unconstrained
+   IS
+   BEGIN
+      RETURN sys$ymintervalsubtract (LEFT => LEFT, RIGHT => RIGHT);
+   END sys$ymintervalsubtract;
+
+   FUNCTION SYSDATE
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN SYSDATE;
+   END SYSDATE;
+
+   FUNCTION SYSTIMESTAMP
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN SYSTIMESTAMP;
+   END SYSTIMESTAMP;
+
+   FUNCTION sys_at_time_zone (t IN time_tz_unconstrained, i IN VARCHAR2)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN sys_at_time_zone (t => t, i => i);
+   END sys_at_time_zone;
+
+   FUNCTION sys_at_time_zone (t IN timestamp_tz_unconstrained, i IN VARCHAR2)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN sys_at_time_zone (t => t, i => i);
+   END sys_at_time_zone;
+
+   FUNCTION SYS_CONTEXT (namespace IN VARCHAR2, ATTRIBUTE IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SYS_CONTEXT (namespace => namespace, ATTRIBUTE => ATTRIBUTE);
+   END SYS_CONTEXT;
+
+   FUNCTION SYS_CONTEXT (
+      namespace     IN   VARCHAR2
+    , ATTRIBUTE     IN   VARCHAR2
+    , newoptional   IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN SYS_CONTEXT (namespace        => namespace
+                        , ATTRIBUTE        => ATTRIBUTE
+                        , newoptional      => newoptional
+                         );
+   END SYS_CONTEXT;
+
+   FUNCTION SYS_EXTRACT_UTC (t IN timestamp_tz_unconstrained)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN SYS_EXTRACT_UTC (t => t);
+   END SYS_EXTRACT_UTC;
+
+   FUNCTION SYS_GUID
+      RETURN RAW
+   IS
+   BEGIN
+      RETURN SYS_GUID;
+   END SYS_GUID;
+
+   FUNCTION sys_literaltodate (numerator IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN sys_literaltodate (numerator => numerator);
+   END sys_literaltodate;
+
+   FUNCTION sys_literaltodsinterval (numerator IN VARCHAR2, units IN VARCHAR2)
+      RETURN dsinterval_unconstrained
+   IS
+   BEGIN
+      RETURN sys_literaltodsinterval (numerator      => numerator
+                                    , units          => units);
+   END sys_literaltodsinterval;
+
+   FUNCTION sys_literaltotime (numerator IN VARCHAR2)
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN sys_literaltotime (numerator => numerator);
+   END sys_literaltotime;
+
+   FUNCTION sys_literaltotimestamp (numerator IN VARCHAR2)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN sys_literaltotimestamp (numerator => numerator);
+   END sys_literaltotimestamp;
+
+   FUNCTION sys_literaltotztime (numerator IN VARCHAR2)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN sys_literaltotztime (numerator => numerator);
+   END sys_literaltotztime;
+
+   FUNCTION sys_literaltotztimestamp (numerator IN VARCHAR2)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN sys_literaltotztimestamp (numerator => numerator);
+   END sys_literaltotztimestamp;
+
+   FUNCTION sys_literaltoyminterval (numerator IN VARCHAR2, units IN VARCHAR2)
+      RETURN yminterval_unconstrained
+   IS
+   BEGIN
+      RETURN sys_literaltoyminterval (numerator      => numerator
+                                    , units          => units);
+   END sys_literaltoyminterval;
+
+   FUNCTION TAN (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN TAN (n => n);
+   END TAN;
+
+   FUNCTION TAN (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN TAN (d => d);
+   END TAN;
+
+   FUNCTION TANH (n IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN TANH (n => n);
+   END TANH;
+
+   FUNCTION TANH (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN TANH (d => d);
+   END TANH;
+
+   FUNCTION TO_BINARY_DOUBLE (RIGHT IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN TO_BINARY_DOUBLE (RIGHT => RIGHT);
+   END TO_BINARY_DOUBLE;
+
+   FUNCTION TO_BINARY_DOUBLE (LEFT IN VARCHAR2, format IN VARCHAR2)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN TO_BINARY_DOUBLE (LEFT => LEFT, format => format);
+   END TO_BINARY_DOUBLE;
+
+   FUNCTION TO_BINARY_DOUBLE (
+      LEFT     IN   VARCHAR2
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN TO_BINARY_DOUBLE (LEFT        => LEFT, format => format
+                             , parms       => parms);
+   END TO_BINARY_DOUBLE;
+
+   FUNCTION TO_BINARY_FLOAT (RIGHT IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN TO_BINARY_FLOAT (RIGHT => RIGHT);
+   END TO_BINARY_FLOAT;
+
+   FUNCTION TO_BINARY_FLOAT (LEFT IN VARCHAR2, format IN VARCHAR2)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN TO_BINARY_FLOAT (LEFT => LEFT, format => format);
+   END TO_BINARY_FLOAT;
+
+   FUNCTION TO_BINARY_FLOAT (
+      LEFT     IN   VARCHAR2
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN TO_BINARY_FLOAT (LEFT        => LEFT, format => format
+                            , parms       => parms);
+   END TO_BINARY_FLOAT;
+
+   FUNCTION to_blob (RIGHT IN RAW)
+      RETURN BLOB
+   IS
+   BEGIN
+      RETURN to_blob (RIGHT => RIGHT);
+   END to_blob;
+
+   FUNCTION TO_CHAR (RIGHT IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (RIGHT => RIGHT);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN DATE, RIGHT IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, RIGHT => RIGHT);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN NUMBER, RIGHT IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, RIGHT => RIGHT);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN DATE, format IN VARCHAR2, parms IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN NUMBER, format IN VARCHAR2, parms IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   time_unconstrained
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN time_unconstrained, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   time_tz_unconstrained
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN time_tz_unconstrained, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   timestamp_unconstrained
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN timestamp_unconstrained, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   timestamp_tz_unconstrained
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN timestamp_tz_unconstrained, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   timestamp_ltz_unconstrained
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN timestamp_ltz_unconstrained, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   yminterval_unconstrained
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN yminterval_unconstrained, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   dsinterval_unconstrained
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN dsinterval_unconstrained, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN BINARY_FLOAT, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (LEFT IN BINARY_DOUBLE, format IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   BINARY_FLOAT
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CHAR (
+      LEFT     IN   BINARY_DOUBLE
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_CHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_CHAR;
+
+   FUNCTION TO_CLOB (RIGHT IN VARCHAR2)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN TO_CLOB (RIGHT => RIGHT);
+   END TO_CLOB;
+
+   FUNCTION TO_DATE (RIGHT IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN TO_DATE (RIGHT => RIGHT);
+   END TO_DATE;
+
+   FUNCTION TO_DATE (LEFT IN VARCHAR2, RIGHT IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN TO_DATE (LEFT => LEFT, RIGHT => RIGHT);
+   END TO_DATE;
+
+   FUNCTION TO_DATE (LEFT IN NUMBER, RIGHT IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN TO_DATE (LEFT => LEFT, RIGHT => RIGHT);
+   END TO_DATE;
+
+   FUNCTION TO_DATE (LEFT IN VARCHAR2, format IN VARCHAR2, parms IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN TO_DATE (LEFT => LEFT, format => format, parms => parms);
+   END TO_DATE;
+
+   FUNCTION TO_DSINTERVAL (RIGHT IN VARCHAR2)
+      RETURN dsinterval_unconstrained
+   IS
+   BEGIN
+      RETURN TO_DSINTERVAL (RIGHT => RIGHT);
+   END TO_DSINTERVAL;
+
+   FUNCTION TO_DSINTERVAL (RIGHT IN VARCHAR2, parms IN VARCHAR2)
+      RETURN dsinterval_unconstrained
+   IS
+   BEGIN
+      RETURN TO_DSINTERVAL (RIGHT => RIGHT, parms => parms);
+   END TO_DSINTERVAL;
+
+   FUNCTION TO_MULTI_BYTE (c IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_MULTI_BYTE (c => c);
+   END TO_MULTI_BYTE;
+
+   FUNCTION TO_NCHAR (LEFT IN BINARY_FLOAT, format IN NVARCHAR2)
+      RETURN NVARCHAR2
+   IS
+   BEGIN
+      RETURN TO_NCHAR (LEFT => LEFT, format => format);
+   END TO_NCHAR;
+
+   FUNCTION TO_NCHAR (LEFT IN BINARY_DOUBLE, format IN NVARCHAR2)
+      RETURN NVARCHAR2
+   IS
+   BEGIN
+      RETURN TO_NCHAR (LEFT => LEFT, format => format);
+   END TO_NCHAR;
+
+   FUNCTION TO_NCHAR (
+      LEFT     IN   BINARY_FLOAT
+    , format   IN   NVARCHAR2
+    , parms    IN   NVARCHAR2
+   )
+      RETURN NVARCHAR2
+   IS
+   BEGIN
+      RETURN TO_NCHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_NCHAR;
+
+   FUNCTION TO_NCHAR (
+      LEFT     IN   BINARY_DOUBLE
+    , format   IN   NVARCHAR2
+    , parms    IN   NVARCHAR2
+   )
+      RETURN NVARCHAR2
+   IS
+   BEGIN
+      RETURN TO_NCHAR (LEFT => LEFT, format => format, parms => parms);
+   END TO_NCHAR;
+
+   FUNCTION TO_NUMBER (RIGHT IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN TO_NUMBER (RIGHT => RIGHT);
+   END TO_NUMBER;
+
+   FUNCTION TO_NUMBER (RIGHT IN VARCHAR2)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN TO_NUMBER (RIGHT => RIGHT);
+   END TO_NUMBER;
+
+   FUNCTION TO_NUMBER (LEFT IN VARCHAR2, format IN VARCHAR2)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN TO_NUMBER (LEFT => LEFT, format => format);
+   END TO_NUMBER;
+
+   FUNCTION TO_NUMBER (LEFT IN VARCHAR2, format IN VARCHAR2, parms IN VARCHAR2)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN TO_NUMBER (LEFT => LEFT, format => format, parms => parms);
+   END TO_NUMBER;
+
+   FUNCTION to_raw (RIGHT IN BLOB)
+      RETURN RAW
+   IS
+   BEGIN
+      RETURN to_raw (RIGHT => RIGHT);
+   END to_raw;
+
+   FUNCTION TO_SINGLE_BYTE (c IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TO_SINGLE_BYTE (c => c);
+   END TO_SINGLE_BYTE;
+
+   FUNCTION to_time (RIGHT IN VARCHAR2)
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN to_time (RIGHT => RIGHT);
+   END to_time;
+
+   FUNCTION to_time (LEFT IN VARCHAR2, format IN VARCHAR2, parms IN VARCHAR2)
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN to_time (LEFT => LEFT, format => format, parms => parms);
+   END to_time;
+
+   FUNCTION to_time (LEFT IN VARCHAR2, format IN VARCHAR2)
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN to_time (LEFT => LEFT, format => format);
+   END to_time;
+
+   FUNCTION to_time (RIGHT IN time_tz_unconstrained)
+      RETURN time_unconstrained
+   IS
+   BEGIN
+      RETURN to_time (RIGHT => RIGHT);
+   END to_time;
+
+   FUNCTION TO_TIMESTAMP (RIGHT IN VARCHAR2)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP (RIGHT => RIGHT);
+   END TO_TIMESTAMP;
+
+   FUNCTION TO_TIMESTAMP (
+      LEFT     IN   VARCHAR2
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP (LEFT => LEFT, format => format, parms => parms);
+   END TO_TIMESTAMP;
+
+   FUNCTION TO_TIMESTAMP (LEFT IN VARCHAR2, format IN VARCHAR2)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP (LEFT => LEFT, format => format);
+   END TO_TIMESTAMP;
+
+   FUNCTION TO_TIMESTAMP (RIGHT IN timestamp_tz_unconstrained)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP (RIGHT => RIGHT);
+   END TO_TIMESTAMP;
+
+   FUNCTION TO_TIMESTAMP (RIGHT IN DATE)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP (RIGHT => RIGHT);
+   END TO_TIMESTAMP;
+
+   FUNCTION TO_TIMESTAMP (arg IN timestamp_ltz_unconstrained)
+      RETURN timestamp_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP (arg => arg);
+   END TO_TIMESTAMP;
+
+   FUNCTION TO_TIMESTAMP_TZ (RIGHT IN VARCHAR2)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP_TZ (RIGHT => RIGHT);
+   END TO_TIMESTAMP_TZ;
+
+   FUNCTION TO_TIMESTAMP_TZ (
+      LEFT     IN   VARCHAR2
+    , format   IN   VARCHAR2
+    , parms    IN   VARCHAR2
+   )
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP_TZ (LEFT        => LEFT, format => format
+                            , parms       => parms);
+   END TO_TIMESTAMP_TZ;
+
+   FUNCTION TO_TIMESTAMP_TZ (LEFT IN VARCHAR2, format IN VARCHAR2)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP_TZ (LEFT => LEFT, format => format);
+   END TO_TIMESTAMP_TZ;
+
+   FUNCTION TO_TIMESTAMP_TZ (RIGHT IN timestamp_unconstrained)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP_TZ (RIGHT => RIGHT);
+   END TO_TIMESTAMP_TZ;
+
+   FUNCTION TO_TIMESTAMP_TZ (arg IN DATE)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP_TZ (arg => arg);
+   END TO_TIMESTAMP_TZ;
+
+   FUNCTION TO_TIMESTAMP_TZ (arg IN timestamp_ltz_unconstrained)
+      RETURN timestamp_tz_unconstrained
+   IS
+   BEGIN
+      RETURN TO_TIMESTAMP_TZ (arg => arg);
+   END TO_TIMESTAMP_TZ;
+
+   FUNCTION to_time_tz (RIGHT IN VARCHAR2)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN to_time_tz (RIGHT => RIGHT);
+   END to_time_tz;
+
+   FUNCTION to_time_tz (LEFT IN VARCHAR2, format IN VARCHAR2, parms IN VARCHAR2)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN to_time_tz (LEFT => LEFT, format => format, parms => parms);
+   END to_time_tz;
+
+   FUNCTION to_time_tz (LEFT IN VARCHAR2, format IN VARCHAR2)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN to_time_tz (LEFT => LEFT, format => format);
+   END to_time_tz;
+
+   FUNCTION to_time_tz (RIGHT IN time_unconstrained)
+      RETURN time_tz_unconstrained
+   IS
+   BEGIN
+      RETURN to_time_tz (RIGHT => RIGHT);
+   END to_time_tz;
+
+   FUNCTION TO_YMINTERVAL (RIGHT IN VARCHAR2)
+      RETURN yminterval_unconstrained
+   IS
+   BEGIN
+      RETURN TO_YMINTERVAL (RIGHT => RIGHT);
+   END TO_YMINTERVAL;
+
+   FUNCTION TRANSLATE (str1 IN VARCHAR2, src IN VARCHAR2, dest IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TRANSLATE (str1 => str1, src => src, dest => dest);
+   END TRANSLATE;
+
+   FUNCTION TRIM (v IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TRIM (v => v);
+   END TRIM;
+
+   FUNCTION TRIM (v IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN TRIM (v => v);
+   END TRIM;
+
+   FUNCTION TRUNC (n IN NUMBER, places IN PLS_INTEGER DEFAULT 0)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN TRUNC (n => n, places => places);
+   END TRUNC;
+
+   FUNCTION TRUNC (LEFT IN DATE)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN TRUNC (LEFT => LEFT);
+   END TRUNC;
+
+   FUNCTION TRUNC (LEFT IN DATE, RIGHT IN VARCHAR2)
+      RETURN DATE
+   IS
+   BEGIN
+      RETURN TRUNC (LEFT => LEFT, RIGHT => RIGHT);
+   END TRUNC;
+
+   FUNCTION TRUNC (f IN BINARY_FLOAT)
+      RETURN BINARY_FLOAT
+   IS
+   BEGIN
+      RETURN TRUNC (f => f);
+   END TRUNC;
+
+   FUNCTION TRUNC (d IN BINARY_DOUBLE)
+      RETURN BINARY_DOUBLE
+   IS
+   BEGIN
+      RETURN TRUNC (d => d);
+   END TRUNC;
+
+   FUNCTION TRUNC (i IN PLS_INTEGER, places IN PLS_INTEGER DEFAULT 0)
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN TRUNC (i => i, places => places);
+   END TRUNC;
+
+   FUNCTION TZ_OFFSET (region IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN TZ_OFFSET (region => region);
+   END TZ_OFFSET;
+
+   FUNCTION UID
+      RETURN PLS_INTEGER
+   IS
+   BEGIN
+      RETURN UID;
+   END UID;
+
+   FUNCTION UNISTR (ch IN VARCHAR2)
+      RETURN NVARCHAR2
+   IS
+   BEGIN
+      RETURN UNISTR (ch => ch);
+   END UNISTR;
+
+   FUNCTION UPPER (ch IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN UPPER (ch => ch);
+   END UPPER;
+
+   FUNCTION UPPER (ch IN CLOB)
+      RETURN CLOB
+   IS
+   BEGIN
+      RETURN UPPER (ch => ch);
+   END UPPER;
+
+   FUNCTION USER
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN USER;
+   END USER;
+
+   FUNCTION USERENV (envstr IN VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN USERENV (envstr => envstr);
+   END USERENV;
+
+   FUNCTION VSIZE (e IN NUMBER)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN VSIZE (e => e);
+   END VSIZE;
+
+   FUNCTION VSIZE (e IN DATE)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN VSIZE (e => e);
+   END VSIZE;
+
+   FUNCTION VSIZE (e IN VARCHAR2)
+      RETURN NUMBER
+   IS
+   BEGIN
+      RETURN VSIZE (e => e);
+   END VSIZE;
+
+   FUNCTION xor (LEFT IN BOOLEAN, RIGHT IN BOOLEAN)
+      RETURN BOOLEAN
+   IS
+   BEGIN
+      RETURN xor (LEFT => LEFT, RIGHT => RIGHT);
+   END xor;
+END plsql_standard;
+/

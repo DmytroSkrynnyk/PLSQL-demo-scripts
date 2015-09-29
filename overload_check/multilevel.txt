@@ -1,0 +1,32 @@
+SQL> exec show_all_arguments ('allargs_test.noparms2')
+
+Dump of ALL_ARGUMENTS for "allargs_test.noparms2"
+
+Object     OvLd Lev Pos Type            Name           Mode
+---------- ---- --- --- --------------- ------------- ------
+NOPARMS2     1   0    1 VARCHAR2        ARG1           IN
+NOPARMS2     1   0    2 VARCHAR2        ARG2           IN
+NOPARMS2     2   0    1 VARCHAR2        ARG1           IN
+NOPARMS2     2   0    2 VARCHAR2        ARG2           IN
+NOPARMS2     2   0    3 PL/SQL RECORD   ARG3           IN
+NOPARMS2     2   1    1 NUMBER            PERSON_ID    IN
+NOPARMS2     2   1    2 VARCHAR2          PERSON_NM    IN
+
+Dump of Multi-level Collection of ALL_ARGUMENTS for "allargs_test.noparms2"
+ 
+Package SCOTT.ALLARGS_TEST.NOPARMS2 - # of Distinct Programs = 1
+  Name NOPARMS2 - # of Overloadings = 2
+    Overloading 1 - # of Arguments = 2
+      Parameter 1 - # of Breakouts = 1
+          ARG1(VARCHAR2) Lvl-Pos: 0-1
+      Parameter 2 - # of Breakouts = 1
+          ARG2(VARCHAR2) Lvl-Pos: 0-2
+    Overloading 2 - # of Arguments = 3
+      Parameter 1 - # of Breakouts = 1
+          ARG1(VARCHAR2) Lvl-Pos: 0-1
+      Parameter 2 - # of Breakouts = 1
+          ARG2(VARCHAR2) Lvl-Pos: 0-2
+      Parameter 3 - # of Breakouts = 3
+          ARG3(PL/SQL RECORD) Lvl-Pos: 0-3
+          PERSON_ID(NUMBER) Lvl-Pos: 1-1
+          PERSON_NM(VARCHAR2) Lvl-Pos: 1-2

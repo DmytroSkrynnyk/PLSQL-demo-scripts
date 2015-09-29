@@ -1,0 +1,35 @@
+> CREATE OR REPLACE PROCEDURE proc1
+IS
+BEGIN
+   DBMS_OUTPUT.put_line (DBMS_UTILITY.format_call_stack);
+END;
+PROCEDURE PROC1 compiled
+> CREATE OR REPLACE PACKAGE pkg1
+IS
+   PROCEDURE proc2;
+END pkg1;
+PACKAGE PKG1 compiled
+> CREATE OR REPLACE PACKAGE BODY pkg1
+IS
+   PROCEDURE proc2
+   IS
+   BEGIN
+      proc1;
+   END;
+END pkg1;
+PACKAGE BODY PKG1 compiled
+> CREATE OR REPLACE PROCEDURE proc3
+IS
+BEGIN
+   FOR indx IN 1 .. 1000
+   LOOP
+      NULL;
+   END LOOP;
+
+   pkg1.proc2;
+END;
+PROCEDURE PROC3 compiled
+> BEGIN
+   proc3;
+END;
+anonymous block completed

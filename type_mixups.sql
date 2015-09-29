@@ -1,0 +1,15 @@
+CREATE OR REPLACE TYPE atype IS TABLE OF NUMBER;
+/
+
+CREATE OR REPLACE PACKAGE apkg
+IS
+   avar   atype;
+
+   SUBTYPE atype IS DATE;
+END;
+/
+
+BEGIN
+   apkg.avar := SYSDATE;
+END;
+/

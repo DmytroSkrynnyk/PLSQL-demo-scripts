@@ -1,0 +1,91 @@
+CREATE OR REPLACE PACKAGE boolean_pkg AUTHID DEFINER
+IS  
+   FUNCTION bool_to_str (boolean_in IN BOOLEAN)
+      RETURN VARCHAR2;
+
+   /* Consistency with existing TO_CHAR functions, though 
+      of course you still need to preface it with 
+      "boolean_pkg". */
+   FUNCTION to_char (boolean_in IN BOOLEAN)
+      RETURN VARCHAR2;
+
+   FUNCTION str_to_bool (string_in IN VARCHAR2)
+      RETURN BOOLEAN;
+
+   FUNCTION true_value
+      RETURN VARCHAR2;
+
+   FUNCTION false_value
+      RETURN VARCHAR2;
+      
+   PROCEDURE put_line (boolean_in IN BOOLEAN);
+END boolean_pkg;
+/
+
+CREATE OR REPLACE PACKAGE BODY boolean_pkg
+IS
+   c_true    CONSTANT VARCHAR2 (1) := 'T';
+   c_false   CONSTANT VARCHAR2 (1) := 'F';
+
+   FUNCTION bool_to_str (boolean_in IN BOOLEAN)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN
+      CASE boolean_in
+         WHEN TRUE THEN c_true
+         WHEN FALSE THEN c_false
+         ELSE NULL
+      END;
+   END bool_to_str;
+
+   FUNCTION to_char (boolean_in IN BOOLEAN)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN bool_to_str (boolean_in);
+   END;
+
+   FUNCTION str_to_bool (string_in IN VARCHAR2)
+      RETURN BOOLEAN
+   IS
+   BEGIN
+      RETURN 
+      CASE string_in 
+        WHEN c_true THEN TRUE
+        WHEN c_false THEN FALSE
+        ELSE NULL
+      END;
+
+      /* Or you could be "nicer" and support many
+         different common values...
+      RETURN 
+      CASE string_in 
+        WHEN string_in IN (c_true, 'T', 'Y', 'YES') THEN TRUE
+        WHEN string_in IN (c_false, 'F', 'N', 'NO') THEN FALSE
+        ELSE NULL
+      END;
+      */
+   END str_to_bool;
+
+   FUNCTION true_value
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN c_true;
+   END true_value;
+
+   FUNCTION false_value
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN c_false;
+   END false_value;
+   
+   PROCEDURE put_line (boolean_in in boolean)
+   IS
+   BEGIN
+      DBMS_OUTPUT.PUT_LINE (bool_to_str (boolean_in));
+   END;
+END boolean_pkg;
+/

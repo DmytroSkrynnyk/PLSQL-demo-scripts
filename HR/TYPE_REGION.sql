@@ -1,0 +1,66 @@
+CREATE OR REPLACE TYPE TYPE_REGION UNDER ROW_REGION
+( -- object oriented ROWTYPE for REGIONS table
+  -- $Revision: 8696 $
+  -- created : 2007-08-24 15:04:03
+
+  -- attributes
+
+  -- define constructors 
+    CONSTRUCTOR FUNCTION TYPE_REGION RETURN SELF AS RESULT
+  , CONSTRUCTOR FUNCTION TYPE_REGION(IN_REGION_ID CHAR) RETURN SELF AS RESULT
+
+  -- define member functions 
+	, OVERRIDING MEMBER PROCEDURE ROW_SAVE
+) NOT FINAL
+/
+CREATE OR REPLACE TYPE BODY TYPE_REGION IS
+-- $Revision: 8696 $
+
+  -- constructors
+  CONSTRUCTOR FUNCTION TYPE_REGION RETURN SELF AS RESULT
+  IS
+  BEGIN
+
+    SELF.OBJECT_TYPE_NAME  := 'TYPE_REGION';
+    SELF.ROW_DEFAULT();
+    RETURN;
+
+  END;
+
+  ---------------------------------------------------------------
+
+  CONSTRUCTOR FUNCTION TYPE_REGION(IN_REGION_ID CHAR) RETURN SELF AS RESULT
+  IS
+  BEGIN
+
+    SELF.OBJECT_TYPE_NAME  := 'HR.TYPE_REGION';
+    SELF.ROW_SELECT(IN_REGION_ID => IN_REGION_ID);
+
+		SELF.REGION_NAME        := ROW_REGION(IN_REGION_ID => SELF.REGION_ID).REGION_NAME;
+
+    RETURN;
+
+  END;
+
+  ---------------------------------------------------------------
+
+  OVERRIDING MEMBER PROCEDURE ROW_SAVE
+  IS
+  BEGIN
+
+		IF SELF.ROW_EXISTS(IN_REGION_ID => SELF.REGION_ID) THEN
+			SELF.ROW_UPDATE;
+		ELSE
+      IF SELF.REGION_ID  IS NULL THEN
+  			-- set next primary key for region (table has no sequence and before insert trigger)
+  		  SELECT MAX(REGION_ID)+1
+  			  INTO SELF.REGION_ID
+  			FROM REGIONS;
+  		END IF;
+			SELF.ROW_INSERT;
+		END IF;
+
+  END;
+
+END;
+/
